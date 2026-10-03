@@ -33,7 +33,7 @@ Each ticket has two timers measured in integer minutes: a response timer and a r
 ### AC-05 Timers start on creation; resolution runs until RESOLVED
 
 - Given policy High with `response_minutes=60` and `resolution_minutes=480` at T0, When a High ticket is created at T0, Then two SlaEvent rows `TIMER_STARTED` exist, one per timer, both with start T0, and the response target is 60 and the resolution target is 480.
-- Given a Critical ticket created at T0 with response target 15, When `GET /api/tickets/{id}/sla` runs at T0 + 14 min 59 s, Then `response.elapsed_minutes` is 14 and `state` is `ON_TRACK`. When it runs at T0 + 15 min 0 s, Then `elapsed_minutes` is 15 and `state` is `BREACHED`.
+- Given a Critical ticket created at T0 with response target 15, When `GET /api/tickets/{id}/sla` runs at T0 + 11 min, Then `response.elapsed_minutes` is 11 and `state` is `ON_TRACK`. When it runs at T0 + 12 min, Then `state` is `AT_RISK` (ASM-S6: 12 * 100 >= 15 * 80). When it runs at T0 + 14 min 59 s, Then `elapsed_minutes` is 14 and `state` is `AT_RISK`. When it runs at T0 + 15 min 0 s, Then `elapsed_minutes` is 15 and `state` is `BREACHED`.
 - Given a ticket with an internal note at T0 + 5 min and its first PUBLIC agent reply at T0 + 20 min, Then the response timer shows `stopped_at` = T0 + 20 min and `elapsed_minutes` = 20. The note at T0 + 5 min did not stop it. Reading at T0 + 60 min still shows 20.
 - Given a ticket in `PENDING_CUSTOMER` at T0 + 100 min, When it is read at T0 + 300 min, Then `resolution.elapsed_minutes` is 300 and `stopped_at` is null.
 - Given a ticket that reaches `RESOLVED` at T0 + 200 min, When it is read at T0 + 500 min, Then `resolution.elapsed_minutes` is 200 and `stopped_at` is T0 + 200 min.
