@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, Engine, text
 
 from src.types.models import UserRecord
 
@@ -25,6 +25,11 @@ def get_by_username(conn: Connection, username: str) -> UserRecord | None:
         team_id=row["team_id"],
         active=bool(row["active"]),
     )
+
+
+def get_by_id_via_engine(engine: Engine, user_id: str) -> UserRecord | None:
+    with engine.connect() as conn:
+        return get_by_id(conn, user_id)
 
 
 def get_by_id(conn: Connection, user_id: str) -> UserRecord | None:
