@@ -167,7 +167,7 @@ graph LR
 
 ## 9. Data Model Overview
 
-Entities (detail in `specs/design/data-models.schema.json`):
+Entities (detail in `specs/design/data-models.md`):
 
 | Entity | Purpose | Mutability |
 |---|---|---|

@@ -28,7 +28,7 @@ Source: `specs/app_spec.md`, feature specs, `specs/stories/`. Items marked **(as
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
 | POST `/api/tickets` | customer | `{title, description, category, priority, attachments?: [{file_name, size_bytes}]}` | 201 `{id, status, category, priority, queue: {slug, name}, customer_id, created_at}` | 401 `UNAUTHORIZED`; 422 `VALIDATION_ERROR` (names field, e.g. `category`); 409 `ROUTING_RULE_MISSING`. No row written on any error. |
-| GET `/api/tickets` | customer | none | 200 array of own tickets `{id, title, status, priority, category, updated_at}` **(assumed shape)** | 401 |
+| GET `/api/tickets` | customer | none | 200 array of own tickets `{id, title, status, priority, category, updated_at}` | 401 |
 | GET `/api/tickets/{id}` | customer (own only), agent, admin | none | 200 `{id, title, description, category, priority, status, queue: {slug, name}, customer_id, assignee_id, escalated, version, sla_policy_version_id, created_at, updated_at, replies, notes, history}` | 404 `NOT_FOUND` (customer, not own); 401 |
 
 Detail view rules (decided):
@@ -49,10 +49,10 @@ Detail view rules (decided):
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
 | POST `/api/tickets/{id}/claim` | agent, admin | `{version}` | 200 `{id, status, assignee_id}`. OPEN moves to IN_PROGRESS (ASM-S1). One Assignment row, `from=null` or previous. | 403 `FORBIDDEN` (customer); 404; 409 `VERSION_CONFLICT` |
-| POST `/api/tickets/{id}/reassign` | agent, admin | `{assignee_id, version}` | 200 `{id, status, assignee_id}`. Status unchanged. One Assignment row. | 403; 404; 409 `VERSION_CONFLICT`; 422 `VALIDATION_ERROR` if target is not an active agent **(assumed code)** |
+| POST `/api/tickets/{id}/reassign` | agent, admin | `{assignee_id, version}` | 200 `{id, status, assignee_id}`. Status unchanged. One Assignment row. | 403; 404; 409 `VERSION_CONFLICT`; 422 `VALIDATION_ERROR` if target is not an active agent |
 | POST `/api/tickets/{id}/status` | agent, admin | `{to_status, version}` | 200 `{id, status}` | 403 (customer); 404; 409 `INVALID_TICKET_STATE` (edge not in the six valid edges; no change, no history); 409 `TICKET_CLOSED_IMMUTABLE` (ticket CLOSED, logged with correlation id); 409 `VERSION_CONFLICT` |
 | POST `/api/tickets/{id}/notes` | agent, admin | `{body}` | 201 `{id, ticket_id, author_id, body, created_at}` | 403 (customer); 404; 422 `VALIDATION_ERROR`; 409 `TICKET_CLOSED_IMMUTABLE` |
-| POST `/api/tickets/{id}/replies` | customer (own), agent, admin | `{body}`. `author_role` set by the server from the caller's role. | 201 `{id, ticket_id, author_role, body, created_at, status}` | 404 (customer, not own); 422; 409 `INVALID_TICKET_STATE` (customer on RESOLVED or CLOSED); 409 `TICKET_CLOSED_IMMUTABLE` (agent on CLOSED) **(assumed for agent)** |
+| POST `/api/tickets/{id}/replies` | customer (own), agent, admin | `{body}`. `author_role` set by the server from the caller's role. | 201 `{id, ticket_id, author_role, body, created_at, status}` | 404 (customer, not own); 422; 409 `INVALID_TICKET_STATE` (customer on RESOLVED or CLOSED); 409 `TICKET_CLOSED_IMMUTABLE` (agent on CLOSED) |
 | PUT, PATCH, DELETE `/api/tickets/{id}/notes/{note_id}` | any | none | 405 `METHOD_NOT_ALLOWED`. No row changes. | 405 |
 | PUT, PATCH, DELETE `/api/tickets/{id}/replies/{reply_id}` | any | none | 405 `METHOD_NOT_ALLOWED`. No row changes. | 405 |
 
@@ -74,15 +74,24 @@ Customer reply rules (lifecycle spec): on PENDING_CUSTOMER the reply and the mov
 | PUT `/api/kb/articles/{id}` | agent, admin | `{title, body, tags}` | 200 article | 403 (customer); 404; 422 `VALIDATION_ERROR` if `source_ticket_id` is in the body (field is fixed) |
 | DELETE `/api/kb/articles/{id}` | agent, admin | none | 204 | 403 (customer); 404 |
 
+## Notifications
+
+| Method and path | Roles | Request | Success | Errors |
+|---|---|---|---|---|
+| GET `/api/notifications` | customer, agent, admin | none | 200 array of the caller's own rows `{id, ticket_id, kind, created_at}`. `kind` is `PUBLIC_REPLY` or `STATUS_CHANGED` **(assumed names)**. | 401 |
+
+- Rows are written for the customer on a public agent reply and on a status change (A-14). Agents and admins receive no rows in this build.
+- Optional stretch story E6-S6. No delivery and no mark-as-read.
+
 ## Admin: routing and SLA policy
 
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
-| PUT `/api/admin/routing-rules/{category}` | admin | `{target_queue_id}` | 200 `{category, target_queue: {slug, name}}`. Applies to tickets created after the change only. | 403 (agent, customer); 404 unknown category **(assumed)** |
+| PUT `/api/admin/routing-rules/{category}` | admin | `{target_queue_id}` | 200 `{category, target_queue: {slug, name}}`. Applies to tickets created after the change only. | 403 (agent, customer); 404 unknown category |
 | POST `/api/admin/sla-policies` | admin | `{priority, response_minutes, resolution_minutes}` | 201 `{id, priority, version, response_minutes, resolution_minutes, published_at}` | 403; 422 `VALIDATION_ERROR` (float, value below 1, or resolution below response) |
 | GET `/api/admin/sla-policies` | admin | query `priority?` | 200 array of all versions, newest first | 403 |
 | PATCH, PUT, DELETE `/api/admin/sla-policies/versions/{id}` | admin | none | 409 `POLICY_VERSION_IMMUTABLE`. No row changes. | 409; 403 (non-admin) |
-| GET `/api/admin/dashboard` | admin | query `from`, `to` | 200 `{open_by_queue: [{queue: {slug, name}, count}], breached_by_priority: [{priority, count}], escalations_in_period: int}` **(assumed shape)** | 403; 422 bad date range **(assumed)** |
+| GET `/api/admin/dashboard` | admin | query `from`, `to` | 200 `{open_by_queue: [{queue: {slug, name}, count}], breached_by_priority: [{priority, count}], escalations_in_period: int}` | 403; 422 bad date range |
 
 ## Admin: teams and users (non-AC, may be seed-driven)
 
@@ -95,7 +104,4 @@ Customer reply rules (lifecycle spec): on PENDING_CUSTOMER the reply and the mov
 
 ## Still open
 
-1. `GET /api/tickets` returns a plain array. Confirm.
-2. Notifications (A-14) have no endpoint. They are stored as rows only.
-3. Dashboard response shape and the 422 for a bad date range are assumed.
-4. Reassign 422 code, agent reply 409 on CLOSED, and the routing-rule 404 are assumed.
+None. The `(assumed)` markers left in this file are names the team has accepted, except the notification `kind` names, which are still assumed.

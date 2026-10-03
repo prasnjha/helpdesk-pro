@@ -43,3 +43,6 @@ Dependency group = sprint. Group A is Sprint 1, B is Sprint 2, C is Sprint 3, D 
 | 5 | E6-S1 | Agent workbench UI | UI | E3-S2, E3-S3, E4-S2 |
 | 6 | E6-S3 | Responsive layout | UI | E6-S1, E5-S2, E6-S2 |
 | 7 | E6-S4 | README quick-start and seed sample tickets | Config | E1-S2, E3-S4, E4-S3 |
+| 8 | E6-S6 | Notification rows and inbox (optional stretch) | API | E3-S1, E3-S3 |
+
+E6-S6 is an optional stretch story. No other story depends on it.
