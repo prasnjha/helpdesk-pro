@@ -1,0 +1,21 @@
+{
+  "name": "helpdesk-pro-substrate",
+  "version": "1.0.0",
+  "description": "HelpDesk Pro project substrate for the support-ticketing and SLA capstone: service-desk agents, skills, commands, hooks and Playwright MCP, layered on the Claude Harness Engine.",
+  "author": { "name": "prasnjha" },
+  "homepage": "https://github.com/prasnjha/helpdesk-pro",
+  "agents": [
+    "./.claude/agents/state-machine-validator-agent.md",
+    "./.claude/agents/sla-monitor-agent.md",
+    "./.claude/agents/role-boundary-auditor-agent.md"
+  ],
+  "skills": [
+    "./.claude/skills/sla-policy-evaluator",
+    "./.claude/skills/escalation-checker"
+  ],
+  "commands": [
+    "./.claude/commands/ac-coverage.md",
+    "./.claude/commands/sla-audit.md"
+  ],
+  "mcpServers": "./.mcp.json"
+}
