@@ -59,3 +59,11 @@
   1. Given a failing AC-tagged test, Then the pipeline fails.
   2. Given an import-linter violation, Then the pipeline fails.
   3. Given line coverage below 80%, Then the pipeline fails (M7).
+
+### E6-S6 Notification rows and inbox (optional stretch)
+- Layer: API · Group: D · Depends on: E3-S1, E3-S3
+- Description: Writes a customer Notification row on each public agent reply and on each status change, and serves `GET /api/notifications`. No delivery (A-14). No other story depends on it, so it can be dropped without blocking.
+- Acceptance criteria:
+  1. Given an agent public reply on a customer's ticket, Then one Notification row with kind `PUBLIC_REPLY` exists for that customer.
+  2. Given a status change on a customer's ticket, Then one Notification row with kind `STATUS_CHANGED` exists for that customer.
+  3. Given a user calls `GET /api/notifications`, Then only that user's rows are returned, and an internal note writes no row.

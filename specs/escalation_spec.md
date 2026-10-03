@@ -23,7 +23,7 @@ When a response or resolution timer breaches, the ticket is flagged `ESCALATED` 
 - A later customer reply (AC-08) or status change does not clear `escalated`.
 - Agents in tier-2 queues see escalated tickets in their queue. Filter: `GET /api/agent/queues/{queue}/tickets?escalated=true`.
 
-ASM-S8 (this spec): breach evaluation is piggybacked on reads and writes, because there is no scheduler (BRD 8.2). Each breach is therefore recorded at the first read or write after the deadline, with `breached_at` set to the exact deadline minute.
+ASM-S8 (this spec): breach evaluation is piggybacked on reads and writes, because there is no scheduler (BRD 8.2). Each breach is therefore recorded at the first read or write after the deadline, with `breached_at` set to the deadline timestamp: the ticket's `created_at` plus the target minutes, in UTC.
 
 ## 3. Acceptance Criteria
 

@@ -92,7 +92,7 @@ Each sprint closes only the ACs listed. Enablers that are not ACs are listed sep
 | 1 | AC-01, AC-02 | Enablers: bearer-token login for seeded users (A-08, ASM-S2), injectable Clock (A-20), health endpoint, error envelope, ticket table and HD- id sequence, routing rules and seed teams, seed SLA policy v1 for each priority (ASM-S4), minimal login page and new-ticket form so Playwright can drive AC-01 and AC-02. Tickets are never created without a queue (NFR-08). |
 | 2 | AC-03, AC-04, AC-07, AC-08 | Lifecycle state machine, claim and reassign, notes and replies, customer reply transition. |
 | 3 | AC-05, AC-06, AC-10 | Timers and escalation. AC-10 adds policy versions on top of the Sprint 1 seed. |
-| 4 | AC-09 | KB publish. Remaining UI: agent workbench, KB pages, admin pages, responsive layout. README quick-start with seed data. CI. |
+| 4 | AC-09 | KB publish. Remaining UI: agent workbench, KB pages, admin pages, responsive layout. README quick-start with seed data. CI. Optional stretch: notifications (E6-S6). |
 
 ## 9. Assumptions
 
@@ -107,7 +107,7 @@ BRD Section 13 (A-01 to A-20) applies unchanged. Additional assumptions from thi
 | ASM-S5 | Field limits: title 1 to 200 characters; description and reply body 1 to 5000 characters. |
 | ASM-S6 | `AT_RISK` means not breached and `elapsed_minutes * 100 >= target_minutes * 80`, using integer math. |
 | ASM-S7 | Routing and the ticket insert share one transaction. A failed route leaves no ticket (`routing_spec.md`). |
-| ASM-S8 | Breach evaluation runs on every ticket read and write, because there is no scheduler. Each breach is recorded at the first read or write after the deadline, with `breached_at` set to the deadline minute (`escalation_spec.md`). |
+| ASM-S8 | Breach evaluation runs on every ticket read and write, because there is no scheduler. Each breach is recorded at the first read or write after the deadline, with `breached_at` set to the deadline timestamp, the ticket's `created_at` plus the target minutes in UTC (`escalation_spec.md`). |
 
 ## 10. Testing Conventions
 

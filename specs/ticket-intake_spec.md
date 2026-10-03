@@ -19,6 +19,7 @@ A customer files a support ticket through the web form with title, description, 
 - Routing runs in the same transaction as the insert (`routing_spec.md`, ASM-S7).
 - Attachments (BRD A-15): accepted as `{file_name, size_bytes}` metadata only.
 - Customer reads: `GET /api/tickets` lists own tickets. `GET /api/tickets/{id}` returns own tickets only. Other ids return 404. Customers never receive notes or history. Agents and admins also use `GET /api/tickets/{id}` for any ticket (`agent-workbench_spec.md`).
+- Notifications: `GET /api/notifications` returns the caller's own rows. A customer gets a row when an agent posts a public reply or the status changes on their ticket (A-14, optional stretch story E6-S6).
 
 ## 3. Acceptance Criteria
 
