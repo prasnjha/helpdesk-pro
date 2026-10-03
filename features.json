@@ -1,1 +1,322 @@
-[]
+[
+  {
+    "id": "F001",
+    "category": "functional",
+    "story": "E2-S3",
+    "group": "A",
+    "description": "POST /api/tickets returns 201 with status OPEN and an HD-###### id for a valid customer request",
+    "steps": [
+      "Log in as seeded customer C-1 and obtain a bearer token",
+      "POST /api/tickets with title, description, category Billing, priority High",
+      "Assert response 201, status OPEN, id matches ^HD-\\d{6}$, customer_id is C-1"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F002",
+    "category": "functional",
+    "story": "E2-S3",
+    "group": "A",
+    "description": "Ticket creates without a token or with invalid fields are rejected and write no ticket row",
+    "steps": [
+      "POST /api/tickets with no Authorization header and assert 401",
+      "POST /api/tickets with category Refunds and assert 422 VALIDATION_ERROR naming category",
+      "Assert the ticket count is unchanged after both requests"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F003",
+    "category": "functional",
+    "story": "E2-S3",
+    "group": "A",
+    "description": "Billing, Technical, and Account tickets are stored in the queue mapped to their category with one ROUTED history row",
+    "steps": [
+      "Create one ticket each for Billing, Technical, and Account",
+      "Assert each stored queue_id matches the team of the same name",
+      "Assert each ticket has exactly one TicketHistory row with event ROUTED"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F004",
+    "category": "functional",
+    "story": "E2-S3",
+    "group": "A",
+    "description": "A ticket whose category has no routing rule returns 409 ROUTING_RULE_MISSING and writes no row",
+    "steps": [
+      "Delete the Billing routing rule in a test fixture",
+      "POST /api/tickets with category Billing and assert 409 with code ROUTING_RULE_MISSING",
+      "Assert the ticket count is unchanged"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F005",
+    "category": "functional",
+    "story": "E3-S2",
+    "group": "B",
+    "description": "Claiming an OPEN ticket sets the assignee, moves it to IN_PROGRESS, and writes one Assignment row with from null",
+    "steps": [
+      "Create an OPEN ticket as customer C-1",
+      "POST /api/tickets/{id}/claim as agent G-1 and assert 200",
+      "Assert assignee is G-1, status is IN_PROGRESS, and one Assignment row has from null and to G-1"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F006",
+    "category": "functional",
+    "story": "E3-S2",
+    "group": "B",
+    "description": "Reassigning a ticket changes the assignee, keeps the status, and appends a second Assignment row",
+    "steps": [
+      "Claim a ticket as G-1, then POST /reassign with assignee_id G-2 as G-2",
+      "Assert status is unchanged and the response is 200",
+      "Assert a second Assignment row exists with from G-1 and to G-2"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F007",
+    "category": "functional",
+    "story": "E3-S1",
+    "group": "B",
+    "description": "Each of the six valid status transitions returns 200 and writes one TicketHistory row",
+    "steps": [
+      "For each valid edge, set up a ticket in the from-state",
+      "POST /api/tickets/{id}/status with the to-state as agent and assert 200",
+      "Assert exactly one TicketHistory row records from-state, to-state, and actor"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F008",
+    "category": "functional",
+    "story": "E3-S1",
+    "group": "B",
+    "description": "A transition outside the valid set returns 409 INVALID_TICKET_STATE and leaves the status unchanged",
+    "steps": [
+      "Create an OPEN ticket and POST /api/tickets/{id}/status with to_status RESOLVED as agent",
+      "Assert response 409 with code INVALID_TICKET_STATE",
+      "Assert status is still OPEN and no history row was written"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F009",
+    "category": "functional",
+    "story": "E4-S2",
+    "group": "C",
+    "description": "Both SLA timers start at ticket creation with the targets of the policy version snapshotted for its priority",
+    "steps": [
+      "Create a High ticket at T0 with the seeded v1 policy (60 and 480)",
+      "Assert two TIMER_STARTED SlaEvent rows exist, both at T0",
+      "GET /api/tickets/{id}/sla and assert response target 60 and resolution target 480"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F010",
+    "category": "functional",
+    "story": "E4-S2",
+    "group": "C",
+    "description": "The response timer is BREACHED at exactly the target minute and stops at the first public agent reply, not at an internal note",
+    "steps": [
+      "Create a Critical ticket at T0 with response target 15; read SLA at T0 + 14 min 59 s and assert ON_TRACK",
+      "Read SLA at T0 + 15 min and assert BREACHED",
+      "On a second ticket, post an internal note at +5 min and a public reply at +20 min; assert stopped_at is +20 min"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F011",
+    "category": "functional",
+    "story": "E4-S3",
+    "group": "C",
+    "description": "A response breach sets escalated to true, keeps the status, and moves the ticket to Billing Tier 2",
+    "steps": [
+      "Create a Billing ticket with no public agent reply and advance the test Clock to the response deadline",
+      "Read the ticket and assert escalated is true and status is unchanged",
+      "Assert queue is Billing Tier 2 and one BREACHED_RESPONSE and one ESCALATED SlaEvent exist"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F012",
+    "category": "functional",
+    "story": "E4-S3",
+    "group": "C",
+    "description": "Repeated reads after a breach write no new SlaEvent rows",
+    "steps": [
+      "Escalate a ticket as in F011, then count SlaEvent rows",
+      "Read the ticket again at a later Clock time",
+      "Assert the SlaEvent row count is unchanged"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F013",
+    "category": "functional",
+    "story": "E3-S3",
+    "group": "B",
+    "description": "An agent internal note returns 201 and its body never appears in any customer response",
+    "steps": [
+      "As agent G-1 assigned to the ticket, POST /api/tickets/{id}/notes with body Checked refund log and assert 201",
+      "As customer C-1 (owner), GET the ticket and its replies through all customer endpoints",
+      "Assert the note body appears in no customer response"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F014",
+    "category": "functional",
+    "story": "E3-S3",
+    "group": "B",
+    "description": "PUT, PATCH, and DELETE on a note or reply id return 405 and change no row",
+    "steps": [
+      "Create a note and a reply on a ticket",
+      "Send PUT, PATCH, and DELETE to each id and assert 405 for every request",
+      "Assert the note and reply rows are unchanged"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F015",
+    "category": "functional",
+    "story": "E3-S4",
+    "group": "B",
+    "description": "A customer reply on a PENDING_CUSTOMER ticket returns 201, moves the ticket to OPEN, and writes one history row in one transaction",
+    "steps": [
+      "Set ticket HD-000010 owned by C-1 to PENDING_CUSTOMER",
+      "POST /api/tickets/HD-000010/replies as C-1 with body Attached the invoice and assert 201",
+      "Assert status is OPEN and one TicketHistory row records PENDING_CUSTOMER to OPEN"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F016",
+    "category": "functional",
+    "story": "E3-S4",
+    "group": "B",
+    "description": "A customer reply on a RESOLVED ticket returns 409 INVALID_TICKET_STATE and stores no reply",
+    "steps": [
+      "Set a ticket owned by C-1 to RESOLVED",
+      "POST /api/tickets/{id}/replies as C-1 and assert 409 with code INVALID_TICKET_STATE",
+      "Assert no TicketReply row was written"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F017",
+    "category": "functional",
+    "story": "E5-S1",
+    "group": "D",
+    "description": "An agent publishing a RESOLVED ticket returns 201 with source_ticket_id fixed to that ticket",
+    "steps": [
+      "Set ticket HD-000030 to RESOLVED",
+      "POST /api/kb/articles as agent A-1 with source_ticket_id HD-000030, title, body, and tags",
+      "Assert response 201 and source_ticket_id is HD-000030"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F018",
+    "category": "security",
+    "story": "E5-S1",
+    "group": "D",
+    "description": "Customer calls to KB create, update, and delete return 403 and leave the article table unchanged",
+    "steps": [
+      "As customer C-1, POST /api/kb/articles and assert 403",
+      "As customer C-1, PUT and DELETE an existing article and assert 403 for each",
+      "Assert the article table is unchanged"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F019",
+    "category": "functional",
+    "story": "E4-S1",
+    "group": "C",
+    "description": "Creating an SLA policy version for High returns 201 with version 2 and leaves version 1 unchanged",
+    "steps": [
+      "As admin, POST /api/admin/sla-policies with priority High, response_minutes 45, resolution_minutes 360",
+      "Assert response 201 with version 2",
+      "GET /api/admin/sla-policies?priority=High and assert v1 still shows 60 and 480"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F020",
+    "category": "security",
+    "story": "E4-S1",
+    "group": "C",
+    "description": "PATCH, PUT, and DELETE on a published SLA policy version return 409 POLICY_VERSION_IMMUTABLE and change no row",
+    "steps": [
+      "As admin, send PATCH, PUT, and DELETE to the v1 High policy version id",
+      "Assert each response is 409 with code POLICY_VERSION_IMMUTABLE",
+      "Assert the v1 row is unchanged"
+    ],
+    "passes": false,
+    "last_evaluated": null,
+    "failure_reason": null,
+    "failure_layer": null
+  }
+]

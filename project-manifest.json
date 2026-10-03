@@ -41,7 +41,7 @@
     "ui_base_url": "http://localhost:5173",
     "health_check": "http://localhost:8000/health",
     "design_score_threshold": 6,
-    "design_max_iterations": 10,
+    "design_max_iterations": 5,
     "test_corpus_dir": "e2e"
   },
   "execution": {

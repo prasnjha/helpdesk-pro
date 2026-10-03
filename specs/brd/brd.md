@@ -154,7 +154,7 @@ graph LR
 
 ### 8.2 Components
 
-- Backend API: FastAPI on uvicorn, port 8000. Exposes `/health` and the REST surface defined in `specs/design/api-contracts.schema.json` (to be produced by `/design`).
+- Backend API: FastAPI on uvicorn, port 8000. Exposes `/health` and the REST surface defined in `specs/design/api-contracts.md`.
 - Frontend: React with Vite, port 5173. Role-aware views for customer, agent, and admin.
 - Database: SQLite file for local runs, in-memory SQLite for tests.
 - Migrations: append-only SQL files. A migration is never edited after it lands. SLA policy versions are rows, never updates.
