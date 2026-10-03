@@ -1,0 +1,72 @@
+{
+  "name": "HelpDesk Pro",
+  "description": "B2B support ticketing and SLA management platform (capstone BC-AINE-007). Customers create tickets; a rules-based routing engine assigns them to team queues (Billing, Technical, Account); agents claim, reassign, note and reply; tickets move through enforced status transitions; an SLA engine tracks response and resolution timers in integer minutes and escalates breaches; resolved tickets publish to a knowledge base; admins manage versioned SLA policies per priority. Synthetic seed data only.",
+  "stack": {
+    "backend": {
+      "language": "python",
+      "version": "3.12",
+      "framework": "fastapi",
+      "package_manager": "uv",
+      "linter": "ruff",
+      "typechecker": "mypy",
+      "test_runner": "pytest",
+      "coverage": "pytest-cov (coverage.xml)",
+      "orm": "sqlalchemy-2.x",
+      "migrations": "append-only SQL files",
+      "architecture_tests": "import-linter",
+      "auth": "seeded-user tokens with customer/agent/admin roles enforced via FastAPI dependencies"
+    },
+    "frontend": {
+      "language": "typescript",
+      "framework": "react",
+      "build_tool": "vite",
+      "package_manager": "npm",
+      "linter": "eslint",
+      "typechecker": "tsc",
+      "test_runner": "vitest",
+      "component_testing": "react-testing-library",
+      "e2e": "playwright"
+    },
+    "database": {
+      "primary": "sqlite",
+      "secondary": "none (in-memory sqlite for tests)"
+    },
+    "deployment": {
+      "method": "local-dev",
+      "services": ["backend (uvicorn, port 8000)", "frontend (vite, port 5173)"]
+    }
+  },
+  "evaluation": {
+    "api_base_url": "http://localhost:8000",
+    "ui_base_url": "http://localhost:5173",
+    "health_check": "http://localhost:8000/health",
+    "design_score_threshold": 6,
+    "design_max_iterations": 10,
+    "test_corpus_dir": "e2e"
+  },
+  "execution": {
+    "default_mode": "solo",
+    "max_self_heal_attempts": 2,
+    "max_auto_iterations": 8,
+    "coverage_threshold": 80,
+    "session_chaining": true,
+    "agent_team_size": 1,
+    "teammate_model": "sonnet"
+  },
+  "verification": {
+    "mode": "local",
+    "health_check": {
+      "url": "http://localhost:8000/health",
+      "retries": 5,
+      "backoff_seconds": 2
+    },
+    "local": {
+      "backend_url": "http://localhost:8000",
+      "frontend_url": "http://localhost:5173",
+      "start_commands": [
+        "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+        "cd frontend && npm run dev -- --port 5173"
+      ]
+    }
+  }
+}
