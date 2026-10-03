@@ -10,8 +10,8 @@
       "POST /api/tickets with title, description, category Billing, priority High",
       "Assert response 201, status OPEN, id matches ^HD-\\d{6}$, customer_id is C-1"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -26,8 +26,8 @@
       "POST /api/tickets with category Refunds and assert 422 VALIDATION_ERROR naming category",
       "Assert the ticket count is unchanged after both requests"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -42,8 +42,8 @@
       "Assert each stored queue_id matches the team of the same name",
       "Assert each ticket has exactly one TicketHistory row with event ROUTED"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -58,8 +58,8 @@
       "POST /api/tickets with category Billing and assert 409 with code ROUTING_RULE_MISSING",
       "Assert the ticket count is unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },

@@ -1,0 +1,38 @@
+[
+  {
+    "failure": {
+      "layer": "api",
+      "gate": "evaluator",
+      "check": "AC-02-route-ticket-detail-history: GET /api/tickets/{id} -> 200",
+      "actual": {
+        "status": 404,
+        "body": "{\"detail\": \"Not Found\"}"
+      },
+      "stack_trace": "No server-side exception; FastAPI's default 404 handler responds because no route matching GET /api/tickets/{id} is registered. Confirmed by inspecting backend/src/api/routers/tickets.py, which defines only `@router.get(\"\")` (list) and `@router.post(\"\")` (create), and backend/src/api/app.py, which only includes health.router, auth.router, and tickets.router (no ticket-detail router).",
+      "error_type": "not_found",
+      "files_likely_involved": [
+        "backend/src/api/routers/tickets.py",
+        "backend/src/api/app.py"
+      ],
+      "prior_attempts": []
+    }
+  },
+  {
+    "failure": {
+      "layer": "api",
+      "gate": "evaluator",
+      "check": "AC-02-routing-rule-missing: POST /api/tickets -> 409 ROUTING_RULE_MISSING",
+      "actual": {
+        "status": "not executed",
+        "body": "n/a"
+      },
+      "stack_trace": "No exception raised by the app. The check could not be driven to the required precondition: the contract's own fixture description requires deleting the Billing routing_rules row before the request, but api-contracts.md exposes no endpoint to remove or null out a routing rule (PUT /api/admin/routing-rules/{category} only changes the target_queue_id, it cannot leave a category unrouted). A direct SQLite mutation (DELETE FROM routing_rules WHERE category='Billing') was attempted to set up the fixture and was blocked by the evaluation sandbox's destructive-action safeguard, so the 409 path was never exercised against the live server.",
+      "error_type": "unknown",
+      "files_likely_involved": [
+        "specs/design/api-contracts.md",
+        "backend/src/repository/migrations/002_routing_rules.sql"
+      ],
+      "prior_attempts": []
+    }
+  }
+]

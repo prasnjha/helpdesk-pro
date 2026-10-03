@@ -12,3 +12,45 @@ coverage: 0%
 learned_rules: 0
 blocked_stories: none
 next_action: Run /brd to start
+
+=== Session 1 ===
+date: 2026-10-03T13:05:00Z
+mode: solo
+groups_completed: [A]
+groups_remaining: [B, C, D]
+current_group: none
+current_stories: []
+sprint_contract: none (skipped, solo mode)
+last_commit: pending (see iteration-log.md)
+features_passing: 4 / 20
+coverage: 99%
+learned_rules: 0
+blocked_stories: none
+next_action: Run /auto --group B to implement E3-S1..E3-S4 (lifecycle, claim/reassign, notes/replies)
+
+=== Session 2 ===
+date: 2026-10-03T14:00:00Z
+mode: lean
+groups_completed: [A]
+groups_remaining: [B, C, D]
+current_group: none
+current_stories: []
+sprint_contract: sprint-contracts/A.json
+last_commit: d1e9a1825f92fac2fcfeefb5afa4e50ebd936430 "docs: lean-mode evaluator verdict for group A, scope-corrected"
+features_passing: 4 / 20
+coverage: 99%
+learned_rules: 0
+blocked_stories: none
+notes: Session 1 ran in solo mode by mistake (manifest default), skipping the
+  sprint-contract/evaluator steps the project owner required for this sprint.
+  Corrected in this session: generator proposed sprint-contracts/A.json,
+  evaluator approved it and ran all api_checks and architecture_checks live
+  against the backend (uvicorn on :8000, verification.mode=local). One check
+  (AC-02-route-ticket-detail-history) initially failed because it required
+  GET /api/tickets/{id}, which is not a Group A story (it belongs to Group D's
+  E6-S1 per specs/stories/sprint-4.md). Confirmed scope with the project
+  owner: kept out of this sprint, contract revised to verify F003/F004's
+  routed-history and missing-rule behaviors via the existing backend pytest
+  tests instead. No production code changed. Full verdict in
+  specs/reviews/evaluator-report.md. PR opened into main (not merged).
+next_action: Run /auto --group B to implement E3-S1..E3-S4 (lifecycle, claim/reassign, notes/replies)

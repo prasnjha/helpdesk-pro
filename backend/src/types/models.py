@@ -1,0 +1,49 @@
+"""Plain data shapes shared across layers. No framework imports."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class UserRecord:
+    id: str
+    username: str
+    password_hash: str
+    role: str
+    team_id: int | None
+    active: bool
+
+
+@dataclass(frozen=True)
+class QueueRef:
+    slug: str
+    name: str
+
+
+@dataclass(frozen=True)
+class TicketSummary:
+    id: str
+    title: str
+    status: str
+    priority: str
+    category: str
+    updated_at: str
+
+
+@dataclass(frozen=True)
+class TicketRecord:
+    id: str
+    title: str
+    description: str
+    category: str
+    priority: str
+    status: str
+    queue: QueueRef
+    customer_id: str
+    assignee_id: str | None
+    escalated: bool
+    sla_policy_version_id: int
+    version: int
+    created_at: str
+    updated_at: str
