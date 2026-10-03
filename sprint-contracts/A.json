@@ -1,0 +1,123 @@
+{
+  "group": "A",
+  "stories": [
+    "E1-S1",
+    "E1-S2",
+    "E1-S3",
+    "E1-S4",
+    "E2-S1",
+    "E2-S2",
+    "E2-S3",
+    "E2-S4"
+  ],
+  "features": ["F001", "F002", "F003", "F004"],
+  "contract": {
+    "api_checks": [
+      {
+        "id": "AC-01-create-ticket-success",
+        "method": "POST",
+        "path": "/api/tickets",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": {
+          "title": "Refund not received",
+          "description": "I was charged twice for the same invoice.",
+          "category": "Billing",
+          "priority": "High"
+        },
+        "expected_status": 201,
+        "expected_body": { "status": "OPEN", "category": "Billing" },
+        "description": "AC-01: a valid Billing ticket from a logged-in customer is created with status OPEN, an HD-###### id, and queue Billing. Corresponds to F001 and story E2-S3 AC1."
+      },
+      {
+        "id": "AC-01-create-ticket-no-auth",
+        "method": "POST",
+        "path": "/api/tickets",
+        "body": {
+          "title": "Refund not received",
+          "description": "I was charged twice for the same invoice.",
+          "category": "Billing",
+          "priority": "High"
+        },
+        "expected_status": 401,
+        "description": "AC-01: POST /api/tickets without an Authorization header is rejected with 401 and no ticket row is written. Corresponds to F002 and api-contracts.md Tickets table."
+      },
+      {
+        "id": "AC-01-create-ticket-invalid-category",
+        "method": "POST",
+        "path": "/api/tickets",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": {
+          "title": "Refund not received",
+          "description": "I was charged twice for the same invoice.",
+          "category": "Refunds",
+          "priority": "High"
+        },
+        "expected_status": 422,
+        "expected_body": {
+          "error": { "code": "VALIDATION_ERROR" }
+        },
+        "description": "AC-01: an unknown category (Refunds is not Billing, Technical, or Account) returns 422 VALIDATION_ERROR naming the category field, and no ticket row is written. Corresponds to F002 and E2-S3 AC2."
+      },
+      {
+        "id": "AC-02-route-billing-to-queue",
+        "method": "POST",
+        "path": "/api/tickets",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": {
+          "title": "Invoice mismatch",
+          "description": "The invoice amount does not match the quote.",
+          "category": "Billing",
+          "priority": "Medium"
+        },
+        "expected_status": 201,
+        "expected_body": {
+          "status": "OPEN",
+          "queue": { "slug": "billing", "name": "Billing" }
+        },
+        "description": "AC-02: a Billing-category ticket is routed to the Billing queue on creation. The created ticket's detail view (GET /api/tickets/{id}) must also show exactly one TicketHistory row with event ROUTED, per F003."
+      },
+      {
+        "id": "AC-02-route-ticket-detail-history",
+        "method": "GET",
+        "path": "/api/tickets/{id}",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "expected_status": 200,
+        "expected_body": {
+          "queue": { "slug": "billing", "name": "Billing" }
+        },
+        "description": "AC-02: fetching the ticket created in AC-02-route-billing-to-queue (substitute its returned id for {id}) returns the stored queue (slug billing, name Billing) and a history array containing exactly one row with event ROUTED. Confirms routing persisted correctly, per F003 and E2-S3."
+      },
+      {
+        "id": "AC-02-routing-rule-missing",
+        "method": "POST",
+        "path": "/api/tickets",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": {
+          "title": "Need account help",
+          "description": "Category has no routing rule configured in this fixture.",
+          "category": "Billing",
+          "priority": "Low"
+        },
+        "expected_status": 409,
+        "expected_body": {
+          "error": { "code": "ROUTING_RULE_MISSING" }
+        },
+        "description": "AC-02: when the routing rule for a ticket's category has been removed (test fixture deletes the Billing RoutingRule row before this request), the create request returns 409 ROUTING_RULE_MISSING and writes no ticket row. Corresponds to F004 and E2-S3 AC3."
+      }
+    ],
+    "architecture_checks": {
+      "layering": {
+        "required": true,
+        "description": "Backend code under backend/src/ follows the strict one-way layering Types/Models -> Config -> Repository -> Service -> API -> UI, with business rules confined to backend/src/domain. Verified by `uv run lint-imports` passing against the import-linter contract with zero violations."
+      },
+      "typing": {
+        "required": true,
+        "description": "Backend source is statically typed with zero use of Any and passes `uv run mypy src/` in strict mode. SLA timer fields (response/resolution minutes) are integer types only, never float, per NFR-01 and E1-S1 AC3."
+      },
+      "folder_structure": {
+        "required": true,
+        "description": "backend/src/ contains the expected top-level layer folders (types, config, repository, service, api, domain) matching the architecture in .claude/architecture.md and specs/design/component-map.md, with no cross-layer imports that bypass the declared boundaries."
+      }
+    }
+  }
+}
