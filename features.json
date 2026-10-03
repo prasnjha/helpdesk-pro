@@ -150,7 +150,7 @@
     "group": "C",
     "description": "The response timer is BREACHED at exactly the target minute and stops at the first public agent reply, not at an internal note",
     "steps": [
-      "Create a Critical ticket at T0 with response target 15; read SLA at T0 + 14 min 59 s and assert ON_TRACK",
+      "Create a Critical ticket at T0 with response target 15; read SLA at T0 + 11 min and assert ON_TRACK, at T0 + 12 min and assert AT_RISK, and at T0 + 14 min 59 s and assert AT_RISK",
       "Read SLA at T0 + 15 min and assert BREACHED",
       "On a second ticket, post an internal note at +5 min and a public reply at +20 min; assert stopped_at is +20 min"
     ],

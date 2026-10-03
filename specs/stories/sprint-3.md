@@ -14,7 +14,7 @@
 - Layer: Service · Group: C · Depends on: E2-S1, E4-S1, E3-S1
 - Description: Domain functions for integer-minute elapsed time, stop rules, and timer states, exposed by `GET /api/tickets/{id}/sla`. Covers AC-05, ASM-S3, and ASM-S6.
 - Acceptance criteria:
-  1. Given a Critical ticket created at T0, When read at T0 + 14 min 59 s, Then the state is `ON_TRACK`. When read at T0 + 15 min, Then the state is `BREACHED`.
+  1. Given a Critical ticket created at T0, When read at T0 + 11 min, Then the state is `ON_TRACK`. At T0 + 12 min, the state is `AT_RISK`. At T0 + 14 min 59 s, the state is `AT_RISK`. At T0 + 15 min, the state is `BREACHED`.
   2. Given an internal note at T0 + 5 min and a first public reply at T0 + 20 min, Then `response.stopped_at` is T0 + 20 min and stays at 20 minutes elapsed.
   3. Given a `PENDING_CUSTOMER` ticket, Then the resolution timer keeps running. When the ticket reaches `RESOLVED` at T0 + 200 min, Then the timer stops at 200 minutes.
 
