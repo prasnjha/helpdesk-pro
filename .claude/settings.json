@@ -86,6 +86,16 @@
           },
           {
             "type": "command",
+            "command": "node .claude/hooks/ticket-immutability-check.js",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/sla-precision-check.js",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": "node .claude/hooks/check-function-length.js",
             "timeout": 5000
           },
