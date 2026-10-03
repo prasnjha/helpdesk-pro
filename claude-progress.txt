@@ -54,3 +54,47 @@ notes: Session 1 ran in solo mode by mistake (manifest default), skipping the
   tests instead. No production code changed. Full verdict in
   specs/reviews/evaluator-report.md. PR opened into main (not merged).
 next_action: Run /auto --group B to implement E3-S1..E3-S4 (lifecycle, claim/reassign, notes/replies)
+
+=== Session 3 ===
+date: 2026-10-03T15:00:00Z
+mode: solo
+groups_completed: [A, B]
+groups_remaining: [C, D]
+current_group: none
+current_stories: []
+sprint_contract: none (direct implementation, task-scoped request)
+last_commit: pending (see PR into main)
+features_passing: 12 / 20
+coverage: 99%
+learned_rules: 0
+blocked_stories: none
+notes: Implemented Group B (E3-S1..E3-S4: lifecycle state machine, claim/reassign,
+  internal notes and public replies, customer reply transition). New domain
+  module src/domain/ticket_lifecycle.py holds the six-edge transition table and
+  the customer-reply resolution rule, pure and import-nothing-from-above per
+  backend/src/domain/CLAUDE.md. Repository layer gained
+  assignment_repository.py, note_repository.py, reply_repository.py (insert +
+  read only, no update/delete — checked by a new architecture test) plus
+  claim/reassign/change_status/add_note/add_reply/get_by_id/list_history_for
+  on ticket_repository.py, all using the ticket `version` column for
+  optimistic concurrency (409 VERSION_CONFLICT on a stale write). Migration
+  005_workbench.sql adds the three append-only tables and seeds a second agent
+  (AG-2) and customer (C-2), needed for reassign-to-another-agent and
+  cross-customer-isolation tests. API layer gained GET /api/tickets/{id}
+  (role-filtered: customers get replies only, agents/admins get notes and
+  history too — needed by F013's "note never appears in a customer response"
+  check), POST .../claim, .../reassign, .../status, .../notes, .../replies,
+  and explicit 405 routes for PUT/PATCH/DELETE on note and reply ids.
+  TICKET_CLOSED_IMMUTABLE writes are logged with the request's
+  X-Correlation-Id in src/api/error_handlers.py (centralized, not per-route).
+  Added tests/architecture/test_import_linter_contract.py (runs
+  import-linter's Python API inside pytest, own commit, written before any
+  Group B code) and
+  tests/architecture/test_assignment_repository_append_only.py (AC-03's
+  "no update or delete method" structural check). All 74 backend tests pass;
+  ruff, mypy --strict, and lint-imports are clean; coverage is 99% (floor 80%).
+  features.json F005/F006/F007/F008/F013/F014/F015/F016 now pass. PR opened
+  into main (not merged) per the task request.
+next_action: Run /auto --group C to implement SLA engine and escalation
+  (E3-S5/S6, E4-S1..S3): GET /api/tickets/{id}/sla, breach detection and
+  tier-2 escalation, knowledge base publish on resolve.
