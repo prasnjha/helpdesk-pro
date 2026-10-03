@@ -7,12 +7,30 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Engine, text
+from sqlalchemy import Connection, Engine, text
 
 from src.domain.routing import resolve_queue_id
-from src.repository import routing_repository, sla_policy_repository, team_repository
-from src.types.errors import RoutingRuleMissingError
-from src.types.models import TicketRecord, TicketSummary
+from src.domain.ticket_lifecycle import resolve_customer_reply_status, validate_transition
+from src.repository import (
+    assignment_repository,
+    note_repository,
+    reply_repository,
+    routing_repository,
+    sla_policy_repository,
+    team_repository,
+)
+from src.types.errors import (
+    NotFoundError,
+    RoutingRuleMissingError,
+    TicketClosedImmutableError,
+    VersionConflictError,
+)
+from src.types.models import (
+    TicketHistoryRecord,
+    TicketRecord,
+    TicketReplyRecord,
+    TicketSummary,
+)
 
 
 def create_ticket(
@@ -120,3 +138,295 @@ def history_events_for(engine: Engine, ticket_id: str) -> list[str]:
             {"id": ticket_id},
         ).all()
         return [row[0] for row in rows]
+
+
+def list_history_for(engine: Engine, ticket_id: str) -> list[TicketHistoryRecord]:
+    with engine.connect() as conn:
+        rows = (
+            conn.execute(
+                text(
+                    "SELECT id, ticket_id, event, from_state, to_state, actor_id, "
+                    "correlation_id, created_at FROM ticket_history "
+                    "WHERE ticket_id = :id ORDER BY id"
+                ),
+                {"id": ticket_id},
+            )
+            .mappings()
+            .all()
+        )
+        return [TicketHistoryRecord(**row) for row in rows]
+
+
+def _get_by_id(conn: Connection, ticket_id: str) -> TicketRecord | None:
+    row = (
+        conn.execute(text("SELECT * FROM tickets WHERE id = :id"), {"id": ticket_id})
+        .mappings()
+        .first()
+    )
+    if row is None:
+        return None
+    queue = team_repository.get_by_id(conn, row["queue_id"])
+    assert queue is not None
+    return TicketRecord(
+        id=row["id"],
+        title=row["title"],
+        description=row["description"],
+        category=row["category"],
+        priority=row["priority"],
+        status=row["status"],
+        queue=queue,
+        customer_id=row["customer_id"],
+        assignee_id=row["assignee_id"],
+        escalated=bool(row["escalated"]),
+        sla_policy_version_id=row["sla_policy_version_id"],
+        version=row["version"],
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+    )
+
+
+def get_by_id(engine: Engine, ticket_id: str) -> TicketRecord | None:
+    with engine.connect() as conn:
+        return _get_by_id(conn, ticket_id)
+
+
+def _require_ticket(conn: Connection, ticket_id: str) -> TicketRecord:
+    ticket = _get_by_id(conn, ticket_id)
+    if ticket is None:
+        raise NotFoundError(f"Ticket '{ticket_id}' not found")
+    return ticket
+
+
+def _require_version(ticket: TicketRecord, version: int) -> None:
+    if ticket.version != version:
+        raise VersionConflictError(f"Ticket '{ticket.id}' was updated by someone else")
+
+
+def claim(
+    engine: Engine, *, ticket_id: str, actor_id: str, version: int, now: datetime
+) -> TicketRecord:
+    """Set the assignee to `actor_id`; an `OPEN` ticket also moves to `IN_PROGRESS`
+    (ASM-S1). The assignment insert and the ticket update share one transaction.
+    """
+    created_at = now.isoformat()
+    with engine.begin() as conn:
+        ticket = _require_ticket(conn, ticket_id)
+        _require_version(ticket, version)
+        if ticket.status == "CLOSED":
+            raise TicketClosedImmutableError("CLOSED tickets accept no further writes")
+        new_status = "IN_PROGRESS" if ticket.status == "OPEN" else ticket.status
+        result = conn.execute(
+            text(
+                "UPDATE tickets SET assignee_id = :to_user_id, status = :status, "
+                "version = version + 1, updated_at = :now WHERE id = :id AND version = :version"
+            ),
+            {
+                "to_user_id": actor_id,
+                "status": new_status,
+                "now": created_at,
+                "id": ticket_id,
+                "version": version,
+            },
+        )
+        if result.rowcount == 0:
+            raise VersionConflictError(f"Ticket '{ticket_id}' was updated by someone else")
+        assignment_repository.insert(
+            conn,
+            ticket_id=ticket_id,
+            from_user_id=ticket.assignee_id,
+            to_user_id=actor_id,
+            actor_id=actor_id,
+            created_at=created_at,
+        )
+        if new_status != ticket.status:
+            conn.execute(
+                text(
+                    "INSERT INTO ticket_history "
+                    "(ticket_id, event, from_state, to_state, actor_id, "
+                    "correlation_id, created_at) "
+                    "VALUES (:ticket_id, 'STATUS_CHANGED', :from_state, :to_state, "
+                    ":actor_id, NULL, :created_at)"
+                ),
+                {
+                    "ticket_id": ticket_id,
+                    "from_state": ticket.status,
+                    "to_state": new_status,
+                    "actor_id": actor_id,
+                    "created_at": created_at,
+                },
+            )
+        updated = _get_by_id(conn, ticket_id)
+        assert updated is not None
+        return updated
+
+
+def reassign(
+    engine: Engine,
+    *,
+    ticket_id: str,
+    actor_id: str,
+    assignee_id: str,
+    version: int,
+    now: datetime,
+) -> TicketRecord:
+    """Change the assignee. The status does not change (ASM-S1)."""
+    created_at = now.isoformat()
+    with engine.begin() as conn:
+        ticket = _require_ticket(conn, ticket_id)
+        _require_version(ticket, version)
+        if ticket.status == "CLOSED":
+            raise TicketClosedImmutableError("CLOSED tickets accept no further writes")
+        result = conn.execute(
+            text(
+                "UPDATE tickets SET assignee_id = :to_user_id, version = version + 1, "
+                "updated_at = :now WHERE id = :id AND version = :version"
+            ),
+            {"to_user_id": assignee_id, "now": created_at, "id": ticket_id, "version": version},
+        )
+        if result.rowcount == 0:
+            raise VersionConflictError(f"Ticket '{ticket_id}' was updated by someone else")
+        assignment_repository.insert(
+            conn,
+            ticket_id=ticket_id,
+            from_user_id=ticket.assignee_id,
+            to_user_id=assignee_id,
+            actor_id=actor_id,
+            created_at=created_at,
+        )
+        updated = _get_by_id(conn, ticket_id)
+        assert updated is not None
+        return updated
+
+
+def change_status(
+    engine: Engine,
+    *,
+    ticket_id: str,
+    actor_id: str,
+    to_status: str,
+    version: int,
+    now: datetime,
+    correlation_id: str | None = None,
+) -> TicketRecord:
+    """Apply one of the six valid status edges and write one TicketHistory row."""
+    created_at = now.isoformat()
+    with engine.begin() as conn:
+        ticket = _require_ticket(conn, ticket_id)
+        _require_version(ticket, version)
+        validate_transition(ticket.status, to_status)
+        result = conn.execute(
+            text(
+                "UPDATE tickets SET status = :status, version = version + 1, "
+                "updated_at = :now WHERE id = :id AND version = :version"
+            ),
+            {"status": to_status, "now": created_at, "id": ticket_id, "version": version},
+        )
+        if result.rowcount == 0:
+            raise VersionConflictError(f"Ticket '{ticket_id}' was updated by someone else")
+        conn.execute(
+            text(
+                "INSERT INTO ticket_history "
+                "(ticket_id, event, from_state, to_state, actor_id, correlation_id, created_at) "
+                "VALUES (:ticket_id, 'STATUS_CHANGED', :from_state, :to_state, "
+                ":actor_id, :correlation_id, :created_at)"
+            ),
+            {
+                "ticket_id": ticket_id,
+                "from_state": ticket.status,
+                "to_state": to_status,
+                "actor_id": actor_id,
+                "correlation_id": correlation_id,
+                "created_at": created_at,
+            },
+        )
+        updated = _get_by_id(conn, ticket_id)
+        assert updated is not None
+        return updated
+
+
+def add_note(
+    engine: Engine, *, ticket_id: str, author_id: str, body: str, now: datetime
+) -> tuple[int, str]:
+    """Insert one internal note. Returns `(note_id, created_at)`."""
+    created_at = now.isoformat()
+    with engine.begin() as conn:
+        ticket = _require_ticket(conn, ticket_id)
+        if ticket.status == "CLOSED":
+            raise TicketClosedImmutableError("CLOSED tickets accept no further writes")
+        note_id = note_repository.insert(
+            conn, ticket_id=ticket_id, author_id=author_id, body=body, created_at=created_at
+        )
+        return note_id, created_at
+
+
+def add_reply(
+    engine: Engine,
+    *,
+    ticket_id: str,
+    author_id: str,
+    author_role: str,
+    body: str,
+    now: datetime,
+) -> tuple[TicketReplyRecord, TicketRecord]:
+    """Insert a reply and apply the lifecycle-spec status move (if any), in one
+    transaction (AC-08). A customer reply on someone else's ticket is reported as
+    `NotFoundError`, never `ForbiddenError` (api-contracts.md).
+    """
+    created_at = now.isoformat()
+    with engine.begin() as conn:
+        ticket = _require_ticket(conn, ticket_id)
+        if author_role == "customer":
+            if ticket.customer_id != author_id:
+                raise NotFoundError(f"Ticket '{ticket_id}' not found")
+            new_status = resolve_customer_reply_status(ticket.status)
+        else:
+            if ticket.status == "CLOSED":
+                raise TicketClosedImmutableError("CLOSED tickets accept no further writes")
+            new_status = ticket.status
+
+        reply_id = reply_repository.insert(
+            conn,
+            ticket_id=ticket_id,
+            author_id=author_id,
+            author_role=author_role,
+            body=body,
+            created_at=created_at,
+        )
+
+        if new_status != ticket.status:
+            conn.execute(
+                text(
+                    "UPDATE tickets SET status = :status, version = version + 1, "
+                    "updated_at = :now WHERE id = :id"
+                ),
+                {"status": new_status, "now": created_at, "id": ticket_id},
+            )
+            conn.execute(
+                text(
+                    "INSERT INTO ticket_history "
+                    "(ticket_id, event, from_state, to_state, actor_id, "
+                    "correlation_id, created_at) "
+                    "VALUES (:ticket_id, 'STATUS_CHANGED', :from_state, :to_state, "
+                    ":actor_id, NULL, :created_at)"
+                ),
+                {
+                    "ticket_id": ticket_id,
+                    "from_state": ticket.status,
+                    "to_state": new_status,
+                    "actor_id": author_id,
+                    "created_at": created_at,
+                },
+            )
+
+        updated = _get_by_id(conn, ticket_id)
+        assert updated is not None
+
+    reply = TicketReplyRecord(
+        id=reply_id,
+        ticket_id=ticket_id,
+        author_id=author_id,
+        author_role=author_role,
+        body=body,
+        created_at=created_at,
+    )
+    return reply, updated

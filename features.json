@@ -74,8 +74,8 @@
       "POST /api/tickets/{id}/claim as agent G-1 and assert 200",
       "Assert assignee is G-1, status is IN_PROGRESS, and one Assignment row has from null and to G-1"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -90,8 +90,8 @@
       "Assert status is unchanged and the response is 200",
       "Assert a second Assignment row exists with from G-1 and to G-2"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -106,8 +106,8 @@
       "POST /api/tickets/{id}/status with the to-state as agent and assert 200",
       "Assert exactly one TicketHistory row records from-state, to-state, and actor"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -122,8 +122,8 @@
       "Assert response 409 with code INVALID_TICKET_STATE",
       "Assert status is still OPEN and no history row was written"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -202,8 +202,8 @@
       "As customer C-1 (owner), GET the ticket and its replies through all customer endpoints",
       "Assert the note body appears in no customer response"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -218,8 +218,8 @@
       "Send PUT, PATCH, and DELETE to each id and assert 405 for every request",
       "Assert the note and reply rows are unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -234,8 +234,8 @@
       "POST /api/tickets/HD-000010/replies as C-1 with body Attached the invoice and assert 201",
       "Assert status is OPEN and one TicketHistory row records PENDING_CUSTOMER to OPEN"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -250,8 +250,8 @@
       "POST /api/tickets/{id}/replies as C-1 and assert 409 with code INVALID_TICKET_STATE",
       "Assert no TicketReply row was written"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-03T15:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },

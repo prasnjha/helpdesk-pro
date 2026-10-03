@@ -7,7 +7,7 @@ from src.types.errors import ValidationError
 
 
 def test_E1S4_applied_migration_count_matches_migration_files(engine) -> None:
-    assert applied_migration_count(engine) == 4
+    assert applied_migration_count(engine) == 5
 
 
 def test_E1S1_validation_error_carries_field_and_message() -> None:

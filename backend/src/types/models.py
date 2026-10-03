@@ -47,3 +47,44 @@ class TicketRecord:
     version: int
     created_at: str
     updated_at: str
+
+
+@dataclass(frozen=True)
+class AssignmentRecord:
+    id: int
+    ticket_id: str
+    from_user_id: str | None
+    to_user_id: str
+    actor_id: str
+    created_at: str
+
+
+@dataclass(frozen=True)
+class TicketNoteRecord:
+    id: int
+    ticket_id: str
+    author_id: str
+    body: str
+    created_at: str
+
+
+@dataclass(frozen=True)
+class TicketReplyRecord:
+    id: int
+    ticket_id: str
+    author_id: str
+    author_role: str
+    body: str
+    created_at: str
+
+
+@dataclass(frozen=True)
+class TicketHistoryRecord:
+    id: int
+    ticket_id: str
+    event: str
+    from_state: str | None
+    to_state: str | None
+    actor_id: str
+    correlation_id: str | None
+    created_at: str
