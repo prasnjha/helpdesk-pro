@@ -7,7 +7,9 @@
   "agents": [
     "./.claude/agents/state-machine-validator-agent.md",
     "./.claude/agents/sla-monitor-agent.md",
-    "./.claude/agents/role-boundary-auditor-agent.md"
+    "./.claude/agents/role-boundary-auditor-agent.md",
+    "./.claude/agents/janitor-agent.md",
+    "./.claude/agents/doc-writer-agent.md"
   ],
   "skills": [
     "./.claude/skills/sla-policy-evaluator",
