@@ -6,7 +6,8 @@ import { AgentTicketPage } from "./pages/AgentTicketPage";
 import { AuthGuard } from "./components/AuthGuard";
 import { CustomerTicketPage } from "./pages/CustomerTicketPage";
 import { KbArticlePage } from "./pages/KbArticlePage";
-import { KbListPage } from "./pages/KbListPage";
+import { KbEditorPage } from "./pages/KbEditorPage";
+import { KbSearchPage } from "./pages/KbSearchPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyTicketsPage } from "./pages/MyTicketsPage";
 import { NewTicketPage } from "./pages/NewTicketPage";
@@ -76,7 +77,7 @@ export function App(): JSX.Element {
         path="/kb"
         element={
           <AuthGuard allow={["customer", "agent", "admin"]}>
-            <KbListPage />
+            <KbSearchPage />
           </AuthGuard>
         }
       />
@@ -85,6 +86,22 @@ export function App(): JSX.Element {
         element={
           <AuthGuard allow={["customer", "agent", "admin"]}>
             <KbArticlePage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/agent/kb/new"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <KbEditorPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/agent/kb/:id/edit"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <KbEditorPage />
           </AuthGuard>
         }
       />
