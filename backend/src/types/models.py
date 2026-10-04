@@ -47,6 +47,8 @@ class TicketRecord:
     version: int
     created_at: str
     updated_at: str
+    response_stopped_at: str | None
+    resolution_stopped_at: str | None
 
 
 @dataclass(frozen=True)

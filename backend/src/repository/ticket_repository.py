@@ -111,6 +111,8 @@ def create_ticket(
         version=1,
         created_at=created_at,
         updated_at=created_at,
+        response_stopped_at=None,
+        resolution_stopped_at=None,
     )
 
 
@@ -182,6 +184,8 @@ def _get_by_id(conn: Connection, ticket_id: str) -> TicketRecord | None:
         version=row["version"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
+        response_stopped_at=row["response_stopped_at"],
+        resolution_stopped_at=row["resolution_stopped_at"],
     )
 
 
@@ -308,18 +312,37 @@ def change_status(
     now: datetime,
     correlation_id: str | None = None,
 ) -> TicketRecord:
-    """Apply one of the six valid status edges and write one TicketHistory row."""
+    """Apply one of the six valid status edges and write one TicketHistory row.
+
+    Reaching `RESOLVED` stops the resolution timer, and the response timer too
+    if it is still running (sla-policy-evaluator skill).
+    """
     created_at = now.isoformat()
     with engine.begin() as conn:
         ticket = _require_ticket(conn, ticket_id)
         _require_version(ticket, version)
         validate_transition(ticket.status, to_status)
+        response_stopped_at = ticket.response_stopped_at
+        resolution_stopped_at = ticket.resolution_stopped_at
+        if to_status == "RESOLVED":
+            resolution_stopped_at = created_at
+            if response_stopped_at is None:
+                response_stopped_at = created_at
         result = conn.execute(
             text(
                 "UPDATE tickets SET status = :status, version = version + 1, "
-                "updated_at = :now WHERE id = :id AND version = :version"
+                "updated_at = :now, response_stopped_at = :response_stopped_at, "
+                "resolution_stopped_at = :resolution_stopped_at "
+                "WHERE id = :id AND version = :version"
             ),
-            {"status": to_status, "now": created_at, "id": ticket_id, "version": version},
+            {
+                "status": to_status,
+                "now": created_at,
+                "response_stopped_at": response_stopped_at,
+                "resolution_stopped_at": resolution_stopped_at,
+                "id": ticket_id,
+                "version": version,
+            },
         )
         if result.rowcount == 0:
             raise VersionConflictError(f"Ticket '{ticket_id}' was updated by someone else")
@@ -392,6 +415,15 @@ def add_reply(
             body=body,
             created_at=created_at,
         )
+
+        # The response timer stops at the first PUBLIC agent reply only
+        # (sla-policy-evaluator skill); internal notes and customer replies
+        # never stop it, and a later agent reply never moves it again.
+        if author_role == "agent" and ticket.response_stopped_at is None:
+            conn.execute(
+                text("UPDATE tickets SET response_stopped_at = :stopped_at WHERE id = :id"),
+                {"stopped_at": created_at, "id": ticket_id},
+            )
 
         if new_status != ticket.status:
             conn.execute(
