@@ -58,6 +58,16 @@ def test_NFR03_filter_masks_pii_in_the_formatted_message() -> None:
     assert record.getMessage() == "notify [REDACTED_EMAIL] at [REDACTED_PHONE]"
 
 
+def test_NFR03_filter_masks_pii_in_structured_request_fields() -> None:
+    record = logging.makeLogRecord(
+        {"msg": "request completed", "json_fields": {"path": "/users/jane.doe@example.test"}}
+    )
+
+    RedactionFilter().filter(record)
+
+    assert getattr(record, "json_fields") == {"path": "/users/[REDACTED_EMAIL]"}
+
+
 def test_NFR03_pii_never_reaches_json_log_output(log_stream: io.StringIO) -> None:
     configure_logging("INFO", stream=log_stream)
 

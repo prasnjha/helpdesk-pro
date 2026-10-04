@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 from src.api.app import create_app
+from src.config.log_redaction import known_names
 from src.config.settings import get_settings
 from src.repository.db import run_migrations
 from src.types.clock import TestClock
@@ -28,6 +29,13 @@ def engine():
 @pytest.fixture()
 def clock() -> TestClock:
     return TestClock()
+
+
+@pytest.fixture(autouse=True)
+def reset_known_names() -> Iterator[None]:
+    """The known-names registry is process-wide; clear it so tests stay independent."""
+    yield
+    known_names.replace([])
 
 
 @pytest.fixture()
