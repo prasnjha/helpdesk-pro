@@ -136,19 +136,17 @@ frontend:e2e:
     - cd frontend
     - npm ci
   script:
-    # Build and serve the UI, boot the API against a throwaway sqlite file,
-    # then run the three responsive Playwright projects (E6-S3, E6-S5).
-    - npm run build
-    - npx serve -s dist -l 5173 &
-    - cd ../backend
-    - pip install --no-cache-dir uv
-    - uv sync --extra dev
-    - DATABASE_URL=sqlite:///$(pwd)/ci.db uv run uvicorn src.main:app --port 8000 &
-    - sleep 3
-    - cd ../frontend
+    # playwright.config.ts's webServer entries boot the backend (migrating
+    # and seeding demo tickets) and the frontend dev server themselves
+    # (E6-S3, E6-S5), so this job only needs uv + backend deps on PATH
+    # before invoking the suite.
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - (cd ../backend && uv sync --extra dev)
     - npx playwright test
   artifacts:
     paths:
       - frontend/test-results
+      - frontend/e2e/snapshots
     when: always
     expire_in: 14 days
