@@ -91,4 +91,54 @@ describe("TicketDetailPage", () => {
     const claimCall = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/claim"));
     expect(claimCall).toBeDefined();
   });
+
+  it("E6S1_status_control_only_offers_the_valid_next_states_for_in_progress", async () => {
+    setSession("tok", "agent", "agent1");
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "IN_PROGRESS" }))
+      .mockResolvedValueOnce(jsonResponse(slaSnapshot));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByTestId("ticket-status")).toHaveTextContent("IN_PROGRESS"));
+
+    const select = screen.getByLabelText("Change status") as HTMLSelectElement;
+    const offered = Array.from(select.options).map((o) => o.value);
+    expect(offered).toEqual(["PENDING_CUSTOMER", "RESOLVED"]);
+  });
+
+  it("E6S1_invalid_status_change_surfaces_the_409_message_through_error_banner", async () => {
+    setSession("tok", "agent", "agent1");
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "OPEN" }))
+      .mockResolvedValueOnce(jsonResponse(slaSnapshot))
+      .mockResolvedValueOnce(
+        jsonResponse({ error: { code: "INVALID_TICKET_STATE", message: "That transition is not allowed." } }, 409)
+      );
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByTestId("ticket-status")).toHaveTextContent("OPEN"));
+    fireEvent.click(screen.getByText("Update status"));
+
+    await waitFor(() =>
+      expect(screen.getByText("That transition is not allowed.")).toBeInTheDocument()
+    );
+  });
+
+  it("E6S1_closed_ticket_is_read_only_for_agents", async () => {
+    setSession("tok", "agent", "agent1");
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "CLOSED" }))
+      .mockResolvedValueOnce(jsonResponse(slaSnapshot));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByTestId("ticket-status")).toHaveTextContent("CLOSED"));
+
+    expect(screen.getByText("Closed tickets cannot be changed.")).toBeInTheDocument();
+    expect(screen.queryByText("Claim")).not.toBeInTheDocument();
+    expect(screen.queryByText("Update status")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Reply box")).not.toBeInTheDocument();
+  });
 });
