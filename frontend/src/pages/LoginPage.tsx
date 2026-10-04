@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ApiError, apiRequest } from "../api/client";
 import type { LoginResponse } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Header } from "../components/Header";
 import { setSession } from "../state/session";
 
 const HOME_BY_ROLE: Record<string, string> = {
@@ -41,8 +42,10 @@ export function LoginPage(): JSX.Element {
   }
 
   return (
-    <main>
-      <h1>Sign in</h1>
+    <>
+      <Header />
+      <main>
+        <h1>Sign in</h1>
       <ErrorBanner message={error} />
       <form onSubmit={(e) => void handleSubmit(e)}>
         <label htmlFor="username">Username</label>
@@ -58,6 +61,7 @@ export function LoginPage(): JSX.Element {
 
         <button type="submit">Sign in</button>
       </form>
-    </main>
+      </main>
+    </>
   );
 }
