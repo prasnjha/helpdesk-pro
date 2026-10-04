@@ -17,18 +17,23 @@ export function ClaimReassignPanel({
 }: ClaimReassignPanelProps): JSX.Element {
   return (
     <>
-      <button type="button" onClick={onClaim}>
+      <button type="button" className="claim-button" onClick={onClaim}>
         Claim
       </button>
 
-      <form onSubmit={onReassign}>
-        <label htmlFor="reassign-to">Reassign to (user id)</label>
-        <input
-          id="reassign-to"
-          value={reassignTo}
-          onChange={(e) => onReassignToChange(e.target.value)}
-        />
-        <button type="submit">Reassign</button>
+      <form onSubmit={onReassign} className="inline-form">
+        <div className="field">
+          <label htmlFor="reassign-to">Reassign to (user id)</label>
+          <input
+            id="reassign-to"
+            value={reassignTo}
+            placeholder="e.g. AG-2"
+            onChange={(e) => onReassignToChange(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="btn-secondary">
+          Reassign
+        </button>
       </form>
     </>
   );

@@ -3,6 +3,8 @@
 
 import type { FormEvent } from "react";
 
+import { Icon } from "./Icon";
+
 interface ReplyBoxProps {
   value: string;
   onChange: (value: string) => void;
@@ -11,10 +13,20 @@ interface ReplyBoxProps {
 
 export function ReplyBox({ value, onChange, onSubmit }: ReplyBoxProps): JSX.Element {
   return (
-    <form onSubmit={onSubmit} aria-label="Reply box">
+    <form onSubmit={onSubmit} aria-label="Reply box" className="reply-box">
       <label htmlFor="reply-body">Reply</label>
-      <textarea id="reply-body" value={value} onChange={(e) => onChange(e.target.value)} />
-      <button type="submit">Send reply</button>
+      <textarea
+        id="reply-body"
+        value={value}
+        placeholder="Type your reply…"
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <div className="form-actions">
+        <button type="submit">
+          <Icon name="send" size={16} />
+          Send reply
+        </button>
+      </div>
     </form>
   );
 }

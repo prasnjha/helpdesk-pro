@@ -1,14 +1,63 @@
 // GET /api/kb/articles/{id} — read-only detail view (component-map.md,
 // E5-S2 AC-02). Edit and Delete for staff link to KbEditorPage; a customer
-// sees no editor controls at all.
+// sees no editor controls at all. Laid out after
+// article-detail-cisco-anyconnect-vpn.png: back link, header card, body card.
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { ApiError, apiRequest } from "../api/client";
 import type { KbArticle } from "../api/types";
+import { BackLink } from "../components/BackLink";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Icon } from "../components/Icon";
 import { getRole } from "../state/session";
+import { formatDate } from "../utils/format";
+
+interface ArticleHeaderProps {
+  article: KbArticle;
+  isStaff: boolean;
+  onDelete: () => void;
+}
+
+function ArticleHeader({ article, isStaff, onDelete }: ArticleHeaderProps): JSX.Element {
+  return (
+    <div className="card kb-article-header">
+      <div className="kb-article-top">
+        <div data-testid="article-tags" className="tag-list">
+          {article.tags.map((tag) => (
+            <span key={tag} className="chip chip-open">
+              {tag}
+            </span>
+          ))}
+        </div>
+        {isStaff && (
+          <div className="card-actions">
+            <Link to={`/agent/kb/${article.id}/edit`} className="btn btn-secondary btn-sm">
+              <Icon name="edit" size={16} />
+              Edit
+            </Link>
+            <button type="button" className="btn-danger btn-sm" onClick={onDelete}>
+              <Icon name="trash" size={16} />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+      <h1>{article.title}</h1>
+      <p className="kb-article-meta">
+        <span>
+          <Icon name="clock" size={16} />
+          Last updated {formatDate(article.updated_at)}
+        </span>
+        <span>
+          <Icon name="ticket" size={16} />
+          Source ticket <span className="code-chip">{article.source_ticket_id}</span>
+        </span>
+      </p>
+    </div>
+  );
+}
 
 export function KbArticlePage(): JSX.Element {
   const { id } = useParams<{ id: string }>();
@@ -37,27 +86,16 @@ export function KbArticlePage(): JSX.Element {
       });
   }
 
-  if (!article) {
-    return (
-      <main>
-        <ErrorBanner message={error} />
-      </main>
-    );
-  }
-
   return (
-    <main>
-      <h1>{article.title}</h1>
+    <main className="page-narrow">
+      <BackLink to="/kb">Back to knowledge base</BackLink>
       <ErrorBanner message={error} />
-      <p>{article.body}</p>
-      <p data-testid="article-tags">{article.tags.join(", ")}</p>
-
-      {isStaff && (
+      {article && (
         <>
-          <Link to={`/agent/kb/${article.id}/edit`}>Edit</Link>
-          <button type="button" onClick={handleDelete}>
-            Delete
-          </button>
+          <ArticleHeader article={article} isStaff={isStaff} onDelete={handleDelete} />
+          <article className="card kb-article-body">
+            <p>{article.body}</p>
+          </article>
         </>
       )}
     </main>

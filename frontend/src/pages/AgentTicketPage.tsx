@@ -2,7 +2,8 @@
 // reassign/notes/replies actions (component-map.md, E6-S1, AC-03/04/07/08).
 // Agent-initiated edges only (ticket-lifecycle_spec.md Section 2); the
 // customer-initiated PENDING_CUSTOMER -> OPEN edge happens via a reply on
-// CustomerTicketPage, not this control, and CLOSED is terminal.
+// CustomerTicketPage, not this control, and CLOSED is terminal. Laid out
+// after ticket-detail-active.png (CLOSED: ticket-detail-closed-variant.png).
 
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,12 +18,17 @@ import type {
   StatusResponse,
   TicketDetail,
 } from "../api/types";
+import { ClosedTicketBanner, LockedReply, NoteForm } from "../components/AgentTicketParts";
+import { BackLink } from "../components/BackLink";
 import { ClaimReassignPanel } from "../components/ClaimReassignPanel";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Icon } from "../components/Icon";
 import { ReplyBox } from "../components/ReplyBox";
-import { SlaBadge } from "../components/SlaBadge";
+import { SlaPanel } from "../components/SlaPanel";
 import { StatusControl } from "../components/StatusControl";
 import { ThreadPanel } from "../components/ThreadPanel";
+import { TicketHeader } from "../components/TicketHeader";
+import { TicketHistory } from "../components/TicketHistory";
 
 const VALID_NEXT_STATES: Record<Status, Status[]> = {
   OPEN: ["IN_PROGRESS"],
@@ -142,84 +148,63 @@ export function AgentTicketPage(): JSX.Element {
 
   return (
     <main>
-      <h1>{ticket.title}</h1>
+      <BackLink to={`/agent/queues/${ticket.queue.slug}`}>Back to queue</BackLink>
+      {isClosed && <ClosedTicketBanner />}
       <ErrorBanner message={error} />
-      <dl>
-        <dt>Id</dt>
-        <dd>{ticket.id}</dd>
-        <dt>Status</dt>
-        <dd data-testid="ticket-status">{ticket.status}</dd>
-        <dt>Priority</dt>
-        <dd>{ticket.priority}</dd>
-        <dt>Assignee</dt>
-        <dd data-testid="ticket-assignee">{ticket.assignee_id ?? "Unassigned"}</dd>
-        {ticket.escalated && <dd data-testid="ticket-escalated">Escalated</dd>}
-      </dl>
-      <p>{ticket.description}</p>
 
-      {sla && (
-        <section aria-label="SLA status">
-          <p data-testid="sla-response-state">
-            Response: <SlaBadge state={sla.response.state} />
-          </p>
-          <p data-testid="sla-resolution-state">
-            Resolution: <SlaBadge state={sla.resolution.state} />
-          </p>
-        </section>
-      )}
-
-      {isClosed && <p>Closed tickets cannot be changed.</p>}
-
-      {!isClosed && (
-        <section aria-label="Agent actions">
-          <h2>Actions</h2>
-          <ClaimReassignPanel
-            onClaim={handleClaim}
-            reassignTo={reassignTo}
-            onReassignToChange={setReassignTo}
-            onReassign={handleReassign}
-          />
-          <StatusControl
-            nextStates={nextStates}
-            selected={selectedNextStatus}
-            onChange={setNextStatus}
-            onSubmit={handleStatusChange}
-          />
-        </section>
-      )}
-
-      {canPublishToKb && (
-        <Link to={`/agent/kb/new?source_ticket_id=${ticket.id}`}>Publish to knowledge base</Link>
-      )}
-
-      <ThreadPanel
-        replies={ticket.replies}
-        notes={ticket.notes}
-        showNotes
-        noteForm={
-          !isClosed ? (
-            <form onSubmit={handleAddNote}>
-              <label htmlFor="note-body">Add a note</label>
-              <textarea id="note-body" value={noteBody} onChange={(e) => setNoteBody(e.target.value)} />
-              <button type="submit">Add note</button>
-            </form>
-          ) : null
-        }
-        replyBox={
-          canReply ? <ReplyBox value={replyBody} onChange={setReplyBody} onSubmit={handleReply} /> : null
+      <TicketHeader
+        ticket={ticket}
+        aside={
+          canPublishToKb && (
+            <Link to={`/agent/kb/new?source_ticket_id=${ticket.id}`} className="btn btn-secondary btn-sm">
+              <Icon name="book" size={16} />
+              Publish to knowledge base
+            </Link>
+          )
         }
       />
 
-      <section aria-label="History">
-        <h2>History</h2>
-        <ul>
-          {ticket.history.map((entry) => (
-            <li key={entry.id}>
-              {entry.event}: {entry.from_state ?? "—"} to {entry.to_state ?? "—"}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {!isClosed && (
+        <section aria-label="Agent actions" className="card actions-bar">
+          <h2 className="actions-bar-title">Actions</h2>
+          <div className="actions-bar-controls">
+            <ClaimReassignPanel
+              onClaim={handleClaim}
+              reassignTo={reassignTo}
+              onReassignToChange={setReassignTo}
+              onReassign={handleReassign}
+            />
+            <StatusControl
+              nextStates={nextStates}
+              selected={selectedNextStatus}
+              onChange={setNextStatus}
+              onSubmit={handleStatusChange}
+            />
+          </div>
+        </section>
+      )}
+
+      <div className="detail-layout">
+        <div className="detail-main">
+          <ThreadPanel
+            replies={ticket.replies}
+            notes={ticket.notes}
+            showNotes
+            noteForm={!isClosed ? <NoteForm value={noteBody} onChange={setNoteBody} onSubmit={handleAddNote} /> : null}
+            replyBox={
+              canReply ? (
+                <ReplyBox value={replyBody} onChange={setReplyBody} onSubmit={handleReply} />
+              ) : isClosed ? (
+                <LockedReply />
+              ) : null
+            }
+          />
+        </div>
+        <aside className="detail-side">
+          {sla && <SlaPanel sla={sla} />}
+          <TicketHistory history={ticket.history} />
+        </aside>
+      </div>
     </main>
   );
 }

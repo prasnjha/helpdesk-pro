@@ -120,11 +120,17 @@ jobs:
     name: End-to-end (Playwright)
     runs-on: ubuntu-latest
     needs: [backend, frontend]
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          # On push, check out the branch by name so a baseline refresh can be pushed back.
+          # On pull_request, keep the default (the PR merge commit).
+          ref: ${{ github.event_name == 'push' && github.ref_name || '' }}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -160,8 +166,24 @@ jobs:
         if: steps.has_e2e.outputs.present == 'true'
         run: npx playwright install --with-deps
 
+      - name: Refresh visual baselines on CI runner
+        # Runs only for a push whose head commit message contains the tag.
+        # Working directory is frontend, so the git paths are relative to it.
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[update-snapshots]')
+        run: |
+          npx playwright test --update-snapshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add e2e/snapshots
+          if git diff --cached --quiet; then
+            echo "Baselines already match the CI runner; nothing to commit."
+          else
+            git commit -m "test: refresh visual baselines on CI runner"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
+
       - name: Run Playwright tests
-        if: steps.has_e2e.outputs.present == 'true'
+        if: steps.has_e2e.outputs.present == 'true' && !(github.event_name == 'push' && contains(github.event.head_commit.message, '[update-snapshots]'))
         run: npx playwright test
 
       - name: No Playwright suite yet

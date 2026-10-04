@@ -1,0 +1,85 @@
+/* Knowledge base list and article (knowledge-base.png,
+   article-detail-cisco-anyconnect-vpn.png). */
+
+.kb-search-card {
+  padding: var(--space-lg);
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-canvas);
+  color: var(--color-text-muted);
+}
+
+.search-input:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-input);
+}
+
+.search-input input {
+  flex: 1;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font: var(--text-body-lg);
+}
+
+.kb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--gutter-lg);
+  list-style: none;
+}
+
+.kb-card {
+  gap: var(--space-md);
+}
+
+.kb-card-title {
+  font: var(--text-headline-sm);
+  color: var(--color-secondary);
+}
+
+.kb-card-meta,
+.kb-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-lg);
+  margin-top: auto;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-surface-sidebar);
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.kb-card-meta {
+  gap: var(--space-xs) var(--space-sm);
+}
+
+.kb-article-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.kb-article-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.kb-article-body p {
+  font: var(--text-body-lg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

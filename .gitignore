@@ -1,6 +1,7 @@
 .env
 .env.local
 .env.production
+.claude/worktrees/
 node_modules/
 __pycache__/
 *.pyc

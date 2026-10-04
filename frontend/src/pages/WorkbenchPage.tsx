@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ApiError, apiRequest } from "../api/client";
 import type { Priority, QueueRef, QueueTicket } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Icon } from "../components/Icon";
 import { QueueFilters } from "../components/QueueFilters";
 import { TicketTable } from "../components/TicketTable";
 
@@ -46,20 +47,38 @@ export function WorkbenchPage(): JSX.Element {
   }
 
   return (
-    <main>
-      <h1>Agent workbench</h1>
+    <main className="page-wide">
+      <div className="page-header">
+        <div className="page-title-group">
+          <h1>Agent workbench</h1>
+          <span className="count-pill">
+            {tickets.length} {tickets.length === 1 ? "ticket" : "tickets"}
+          </span>
+        </div>
+      </div>
       <ErrorBanner message={error} />
 
-      <QueueFilters
-        queue={queue}
-        queues={QUEUES}
-        onQueueChange={handleQueueChange}
-        priority={priority}
-        priorities={PRIORITIES}
-        onPriorityChange={setPriority}
-      />
+      <div className="workbench-layout">
+        <aside className="card workbench-filters">
+          <h2 className="card-title">
+            <Icon name="filter" />
+            Filters
+          </h2>
+          <QueueFilters
+            queue={queue}
+            queues={QUEUES}
+            onQueueChange={handleQueueChange}
+            priority={priority}
+            priorities={PRIORITIES}
+            onPriorityChange={setPriority}
+          />
+        </aside>
 
-      <TicketTable tickets={tickets} />
+        <div className="card table-card">
+          <TicketTable tickets={tickets} />
+          {tickets.length === 0 && <p className="table-empty">No tickets in this queue.</p>}
+        </div>
+      </div>
     </main>
   );
 }

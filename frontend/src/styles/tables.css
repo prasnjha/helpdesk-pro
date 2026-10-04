@@ -1,0 +1,206 @@
+/* Styled tables and ticket rows (DESIGN.md 4 Level 1, 5.5). */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.data-table th {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-border);
+  font: var(--text-label-sm);
+  letter-spacing: var(--tracking-label-sm);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-surface-sidebar);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-canvas);
+}
+
+.data-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table .muted {
+  color: var(--color-text-muted);
+  font: var(--text-body-sm);
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.stat-value {
+  font: var(--text-headline-md);
+  color: var(--color-secondary);
+}
+
+.version-pill {
+  display: inline-flex;
+  min-width: 28px;
+  justify-content: center;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sidebar);
+  font: var(--text-code-sm);
+  color: var(--color-secondary);
+}
+
+/* Ticket rows (5.5): 56-64 px, 3 px priority notch, truncating title. */
+.ticket-row td {
+  height: 60px;
+}
+
+.ticket-row td:first-child {
+  border-left: 3px solid transparent;
+}
+
+.notch-critical td:first-child,
+.notch-card.notch-critical {
+  border-left-color: var(--color-critical);
+}
+
+.notch-high td:first-child,
+.notch-card.notch-high {
+  border-left-color: var(--color-warning);
+}
+
+.notch-medium td:first-child,
+.notch-card.notch-medium {
+  border-left-color: var(--color-primary);
+}
+
+.notch-low td:first-child,
+.notch-card.notch-low {
+  border-left-color: var(--color-border-checkbox);
+}
+
+.notch-card {
+  border-left-width: 3px;
+}
+
+.ticket-id {
+  font: var(--text-code-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.cell-title {
+  width: 50%;
+  max-width: 0;
+}
+
+.cell-title .truncate {
+  display: block;
+  font: var(--text-label-lg);
+  color: var(--color-text-strong);
+}
+
+.cell-title .tag-escalated {
+  margin-top: var(--space-xs);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Below 768 px the ticket table becomes stacked cards: no horizontal scroll
+   at 375 px (E6-S3) and every column stays readable. */
+@media (max-width: 767px) {
+  .ticket-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .ticket-table,
+  .ticket-table tbody {
+    display: block;
+  }
+
+  .ticket-table .ticket-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-sm) var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+    border-left: 3px solid transparent;
+  }
+
+  .ticket-table .ticket-row.notch-critical {
+    border-left-color: var(--color-critical);
+  }
+
+  .ticket-table .ticket-row.notch-high {
+    border-left-color: var(--color-warning);
+  }
+
+  .ticket-table .ticket-row.notch-medium {
+    border-left-color: var(--color-primary);
+  }
+
+  .ticket-table .ticket-row.notch-low {
+    border-left-color: var(--color-border-checkbox);
+  }
+
+  .ticket-table .ticket-row td {
+    display: flex;
+    align-items: center;
+    height: auto;
+    padding: 0;
+    border: none;
+  }
+
+  .ticket-table .ticket-row td.cell-id {
+    grid-column: 1 / -1;
+  }
+
+  .ticket-table .ticket-row td.cell-title {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .ticket-table .cell-title .truncate {
+    max-width: 100%;
+  }
+
+  .ticket-table td[data-label]::before {
+    content: attr(data-label);
+    min-width: 64px;
+    margin-right: var(--space-sm);
+    font: var(--text-label-sm);
+    letter-spacing: var(--tracking-label-sm);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .ticket-table td[data-label] {
+    grid-column: 1 / -1;
+  }
+}

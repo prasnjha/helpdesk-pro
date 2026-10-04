@@ -1,0 +1,101 @@
+/* Base element styles and the page container. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: var(--color-canvas);
+  color: var(--color-text-body);
+  font: var(--text-body-md);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 100%;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--color-secondary);
+}
+
+h1 {
+  font: var(--text-headline-lg);
+  letter-spacing: var(--tracking-headline-lg);
+}
+
+h2 {
+  font: var(--text-headline-sm);
+}
+
+h3 {
+  font: var(--text-label-lg);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-button);
+}
+
+img,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+.icon {
+  flex: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Page container ---------------------------------------------------- */
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--margin-lg);
+}

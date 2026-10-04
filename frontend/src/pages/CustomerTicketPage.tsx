@@ -1,17 +1,34 @@
 // GET /api/tickets/{id}, GET /api/tickets/{id}/sla, POST
 // /api/tickets/{id}/replies (component-map.md, E3-S4, E6-S3, AC-08). The
 // backend already filters notes/history to agent/admin only, so this page
-// never renders them.
+// never renders them. Laid out after ticket-detail-customer-view.png.
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { ApiError, apiRequest } from "../api/client";
 import type { ReplyResponse, SlaSnapshot, TicketDetail } from "../api/types";
+import { BackLink } from "../components/BackLink";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Icon } from "../components/Icon";
 import { ReplyBox } from "../components/ReplyBox";
-import { SlaBadge } from "../components/SlaBadge";
+import { SlaPanel } from "../components/SlaPanel";
 import { ThreadPanel } from "../components/ThreadPanel";
+import { TicketHeader } from "../components/TicketHeader";
+
+// Presentational hint shown while the ticket waits on the customer
+// (ticket-detail-customer-view.png "We're waiting for your reply").
+function AwaitingReplyBanner(): JSX.Element {
+  return (
+    <div className="banner banner-info">
+      <Icon name="alert" />
+      <div className="banner-body">
+        <strong>We&apos;re waiting for your reply</strong>
+        <p>The support team asked for more details. Your response keeps this ticket moving.</p>
+      </div>
+    </div>
+  );
+}
 
 export function CustomerTicketPage(): JSX.Element {
   const { id } = useParams<{ id: string }>();
@@ -59,6 +76,7 @@ export function CustomerTicketPage(): JSX.Element {
   if (!ticket) {
     return (
       <main>
+        <BackLink to="/tickets">Back to my tickets</BackLink>
         <ErrorBanner message={error} />
       </main>
     );
@@ -68,40 +86,24 @@ export function CustomerTicketPage(): JSX.Element {
 
   return (
     <main>
-      <h1>{ticket.title}</h1>
+      <BackLink to="/tickets">Back to my tickets</BackLink>
       <ErrorBanner message={error} />
-      <dl>
-        <dt>Id</dt>
-        <dd>{ticket.id}</dd>
-        <dt>Status</dt>
-        <dd data-testid="ticket-status">{ticket.status}</dd>
-        <dt>Priority</dt>
-        <dd>{ticket.priority}</dd>
-        <dt>Assignee</dt>
-        <dd data-testid="ticket-assignee">{ticket.assignee_id ?? "Unassigned"}</dd>
-        {ticket.escalated && <dd data-testid="ticket-escalated">Escalated</dd>}
-      </dl>
-      <p>{ticket.description}</p>
+      <TicketHeader ticket={ticket} />
+      {ticket.status === "PENDING_CUSTOMER" && <AwaitingReplyBanner />}
 
-      {sla && (
-        <section aria-label="SLA status">
-          <p data-testid="sla-response-state">
-            Response: <SlaBadge state={sla.response.state} />
-          </p>
-          <p data-testid="sla-resolution-state">
-            Resolution: <SlaBadge state={sla.resolution.state} />
-          </p>
-        </section>
-      )}
-
-      <ThreadPanel
-        replies={ticket.replies}
-        notes={[]}
-        showNotes={false}
-        replyBox={
-          canReply ? <ReplyBox value={replyBody} onChange={setReplyBody} onSubmit={handleReply} /> : null
-        }
-      />
+      <div className="detail-layout">
+        <div className="detail-main">
+          <ThreadPanel
+            replies={ticket.replies}
+            notes={[]}
+            showNotes={false}
+            replyBox={
+              canReply ? <ReplyBox value={replyBody} onChange={setReplyBody} onSubmit={handleReply} /> : null
+            }
+          />
+        </div>
+        <aside className="detail-side">{sla && <SlaPanel sla={sla} />}</aside>
+      </div>
     </main>
   );
 }

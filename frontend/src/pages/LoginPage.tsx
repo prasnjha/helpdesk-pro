@@ -1,4 +1,5 @@
-// Minimal sign-in page (component-map.md, E2-S4).
+// Sign-in page (component-map.md, E2-S4), laid out after login.png: a
+// centred card with the brand mark. No AppShell here (no session yet).
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ApiError, apiRequest } from "../api/client";
 import type { LoginResponse } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { Header } from "../components/Header";
+import { Icon } from "../components/Icon";
 import { setSession } from "../state/session";
 
 const HOME_BY_ROLE: Record<string, string> = {
@@ -14,6 +15,18 @@ const HOME_BY_ROLE: Record<string, string> = {
   agent: "/agent/queues/billing",
   admin: "/admin/sla-policies",
 };
+
+function LoginBrand(): JSX.Element {
+  return (
+    <div className="login-brand">
+      <span className="login-logo-tile">
+        <img src="/helpdesk-pro-logo.png" alt="HelpDesk Pro" className="login-logo" />
+      </span>
+      <p className="login-product">HelpDesk Pro</p>
+      <p className="login-subtitle">Sign in to manage support tickets, SLAs and the knowledge base.</p>
+    </div>
+  );
+}
 
 export function LoginPage(): JSX.Element {
   const [username, setUsername] = useState("");
@@ -42,26 +55,45 @@ export function LoginPage(): JSX.Element {
   }
 
   return (
-    <>
-      <Header />
-      <main>
-        <h1>Sign in</h1>
-      <ErrorBanner message={error} />
-      <form onSubmit={(e) => void handleSubmit(e)}>
-        <label htmlFor="username">Username</label>
-        <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
+    <div className="login-screen">
+      <main className="login-main">
+        <div className="card login-card">
+          <LoginBrand />
+          <h1 className="login-title">Sign in</h1>
+          <ErrorBanner message={error} />
+          <form onSubmit={(e) => void handleSubmit(e)} className="login-form">
+            <div className="field">
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
 
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-        <button type="submit">Sign in</button>
-      </form>
+            <button type="submit" className="login-submit">
+              Sign in
+              <Icon name="arrowLeft" size={18} className="icon-flip" />
+            </button>
+          </form>
+        </div>
+        <p className="login-footnote">
+          <Icon name="lock" size={16} />
+          Synthetic demo data only
+        </p>
       </main>
-    </>
+    </div>
   );
 }
