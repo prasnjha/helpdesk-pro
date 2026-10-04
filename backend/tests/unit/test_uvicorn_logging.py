@@ -27,7 +27,11 @@ def _restore_uvicorn_loggers() -> None:
         logger.setLevel(logging.NOTSET)
 
 
-def test_NFR06_uvicorn_loggers_write_json_through_the_root_handler(
+def _json_lines(stream: io.StringIO) -> list[dict[str, object]]:
+    return [json.loads(line) for line in stream.getvalue().splitlines()]
+
+
+def test_NFR06_uvicorn_error_logger_writes_json_through_the_root_handler(
     log_stream: io.StringIO,
 ) -> None:
     _simulate_uvicorn_startup()
@@ -35,13 +39,42 @@ def test_NFR06_uvicorn_loggers_write_json_through_the_root_handler(
         configure_logging("INFO", stream=log_stream)
 
         logging.getLogger("uvicorn.error").info("Started server process")
+
+        lines = _json_lines(log_stream)
+        assert [line["logger"] for line in lines] == ["uvicorn.error"]
+        assert lines[0]["message"] == "Started server process"
+        assert lines[0]["level"] == "INFO"
+    finally:
+        _restore_uvicorn_loggers()
+
+
+def test_NFR06_uvicorn_access_info_lines_are_replaced_by_the_request_line(
+    log_stream: io.StringIO,
+) -> None:
+    """uvicorn's access line echoes the query string; helpdesk.request replaces it."""
+    _simulate_uvicorn_startup()
+    try:
+        configure_logging("INFO", stream=log_stream)
+
         logging.getLogger("uvicorn.access").info(
-            '%s - "%s %s HTTP/%s" %d', "127.0.0.1:5000", "GET", "/health", "1.1", 200
+            '%s - "%s %s HTTP/%s" %d', "127.0.0.1:5000", "GET", "/health?token=abc", "1.1", 200
         )
 
-        lines = [json.loads(line) for line in log_stream.getvalue().splitlines()]
-        assert [line["logger"] for line in lines] == ["uvicorn.error", "uvicorn.access"]
-        assert lines[1]["message"] == '127.0.0.1:5000 - "GET /health HTTP/1.1" 200'
+        assert log_stream.getvalue() == ""
+    finally:
+        _restore_uvicorn_loggers()
+
+
+def test_NFR06_uvicorn_access_warnings_are_written_as_json(log_stream: io.StringIO) -> None:
+    _simulate_uvicorn_startup()
+    try:
+        configure_logging("INFO", stream=log_stream)
+
+        logging.getLogger("uvicorn.access").warning("access problem")
+
+        lines = _json_lines(log_stream)
+        assert [line["logger"] for line in lines] == ["uvicorn.access"]
+        assert lines[0]["level"] == "WARNING"
     finally:
         _restore_uvicorn_loggers()
 
@@ -51,10 +84,10 @@ def test_NFR06_uvicorn_loggers_follow_the_configured_level(log_stream: io.String
     try:
         configure_logging("WARNING", stream=log_stream)
 
-        logging.getLogger("uvicorn.access").info("quiet access line")
+        logging.getLogger("uvicorn.error").info("quiet error line")
         logging.getLogger("uvicorn.error").warning("loud error line")
 
-        lines = [json.loads(line) for line in log_stream.getvalue().splitlines()]
+        lines = _json_lines(log_stream)
         assert [line["message"] for line in lines] == ["loud error line"]
     finally:
         _restore_uvicorn_loggers()

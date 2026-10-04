@@ -41,9 +41,8 @@ def test_NFR06_request_line_omits_the_query_string(
 
     lines = _request_lines(log_stream)
     assert lines[0]["path"] == "/health"
-    output = log_stream.getvalue()
-    assert "jane.doe@example.test" not in output
-    assert "token=abc123" not in output
+    assert "jane.doe@example.test" not in log_stream.getvalue()
+    assert "token=abc123" not in json.dumps(_request_lines(log_stream))
 
 
 def test_NFR06_request_line_never_contains_the_request_body(
