@@ -83,6 +83,8 @@ uv run mypy src/                                       # strict type check
 uv run lint-imports                                    # architecture / layering contract
 ```
 
+`backend/coverage.xml` is committed as a snapshot of the last test run. Pytest regenerates it, and CI uploads it as a build artifact.
+
 **Frontend** (from `frontend/`):
 
 ```bash
