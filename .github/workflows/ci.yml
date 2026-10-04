@@ -35,11 +35,11 @@ jobs:
         run: uv run lint-imports
 
       - name: Unit and integration tests with coverage (floor 80%)
-        run: >
-          uv run pytest -q --cov=src --cov-report=term-missing
-          --cov-report=xml --cov-fail-under=80
+        # addopts in backend/pyproject.toml already writes coverage.xml
+        run: uv run pytest --cov-report=term-missing --cov-fail-under=80
 
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -72,6 +72,49 @@ jobs:
 
       - name: Unit tests (vitest)
         run: npm test
+
+  claude-review:
+    # Optional. Runs only on pull requests, and only when the ANTHROPIC_API_KEY secret
+    # exists. Without the secret every step is skipped and the job still passes.
+    # Secrets are not available in a job-level `if`, so the key is checked in a step.
+    name: Claude Code review (optional)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check for ANTHROPIC_API_KEY
+        id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "ANTHROPIC_API_KEY is not set; skipping the Claude Code review."
+          fi
+
+      - name: Check out pull request
+        if: steps.key.outputs.present == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Review pull request with Claude Code
+        if: steps.key.outputs.present == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request for HelpDesk Pro. Read CLAUDE.md and backend/CLAUDE.md
+            first. Check layer boundaries (api, service, repository, domain), role enforcement
+            at the controller layer, SLA timers as integer minutes only, append-only tables
+            (history, notes, assignments, SLA events), and whether each changed acceptance
+            criterion (AC-01 to AC-10) still has a test. Post findings as review comments,
+            most severe first, with file and line. If there are no issues, say so.
 
   e2e:
     name: End-to-end (Playwright)
