@@ -43,3 +43,9 @@ Tokens (colours, type, spacing, radius, elevation) come from `specs/design/DESIG
 - **Queue table below 768 px.** Rows turn into stacked cards with labelled cells.
 - **Detail pages below 1024 px.** The two-column layout becomes one column.
 - **Snapshots.** The Playwright visual baselines in `frontend/e2e/snapshots/` (375 / 768 / 1280) were regenerated on Linux for this restyle.
+
+## Refreshing visual baselines
+
+- The baselines are generated on the GitHub `ubuntu-latest` runner, and CI is the source of truth for them.
+- Local runs on other machines (for example Windows or macOS) may differ slightly from the CI baselines, so a local failure in `responsive.spec.ts` is not by itself a regression.
+- To refresh the baselines, push a commit whose message contains `[update-snapshots]`. The E2E job then runs `npx playwright test --update-snapshots`, commits the new PNGs as `test: refresh visual baselines on CI runner`, and pushes them back to the same branch. The normal Playwright step is skipped on that run.
