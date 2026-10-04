@@ -47,6 +47,8 @@ class TicketRecord:
     version: int
     created_at: str
     updated_at: str
+    response_stopped_at: str | None
+    resolution_stopped_at: str | None
 
 
 @dataclass(frozen=True)
@@ -75,6 +77,27 @@ class TicketReplyRecord:
     author_id: str
     author_role: str
     body: str
+    created_at: str
+
+
+@dataclass(frozen=True)
+class SlaPolicyRecord:
+    id: int
+    priority: str
+    version: int
+    response_minutes: int
+    resolution_minutes: int
+    created_by: str
+    published_at: str
+
+
+@dataclass(frozen=True)
+class SlaEventRecord:
+    id: int
+    ticket_id: str
+    event: str
+    timer: str | None
+    breached_at: str | None
     created_at: str
 
 
