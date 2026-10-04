@@ -6,8 +6,20 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
+// Project root: walk up from this script to the directory that contains .claude/
+function findProjectDir(start) {
+  let cur = start;
+  while (true) {
+    if (fs.existsSync(path.join(cur, '.claude'))) return cur;
+    const parent = path.dirname(cur);
+    if (parent === cur) return null;
+    cur = parent;
+  }
+}
+const projectDir = findProjectDir(__dirname) || process.cwd();
+
 try {
-  const input = JSON.parse(fs.readFileSync('/dev/stdin', 'utf8'));
+  const input = JSON.parse(fs.readFileSync(0, 'utf8'));
   const filePath = (input.tool_input && input.tool_input.file_path) || '';
 
   if (!filePath) {
@@ -25,7 +37,7 @@ try {
   // Try to read project-manifest.json
   let manifest = null;
   try {
-    const manifestPath = path.join(process.cwd(), 'project-manifest.json');
+    const manifestPath = path.join(projectDir, 'project-manifest.json');
     manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   } catch (_) {
     // No manifest — use defaults
@@ -45,7 +57,7 @@ try {
         return candidate;
       }
     }
-    return process.cwd();
+    return projectDir;
   }
 
   const cwd = detectCwd(filePath);

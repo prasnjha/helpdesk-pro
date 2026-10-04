@@ -27,6 +27,13 @@ def get_by_username(conn: Connection, username: str) -> UserRecord | None:
     )
 
 
+def list_display_names(conn: Connection) -> list[str]:
+    rows = conn.execute(
+        text("SELECT display_name FROM users WHERE display_name IS NOT NULL")
+    ).scalars()
+    return [str(name) for name in rows]
+
+
 def get_by_id_via_engine(engine: Engine, user_id: str) -> UserRecord | None:
     with engine.connect() as conn:
         return get_by_id(conn, user_id)

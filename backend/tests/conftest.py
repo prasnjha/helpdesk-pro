@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import io
+import logging
+from collections.abc import Iterator
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 from src.api.app import create_app
+from src.config.log_redaction import known_names
 from src.config.settings import get_settings
 from src.repository.db import run_migrations
 from src.types.clock import TestClock
@@ -24,6 +29,25 @@ def engine():
 @pytest.fixture()
 def clock() -> TestClock:
     return TestClock()
+
+
+@pytest.fixture(autouse=True)
+def reset_known_names() -> Iterator[None]:
+    """The known-names registry is process-wide; clear it so tests stay independent."""
+    yield
+    known_names.replace([])
+
+
+@pytest.fixture()
+def log_stream() -> Iterator[io.StringIO]:
+    """Capture JSON log output in memory and restore the root logger afterwards."""
+    root = logging.getLogger()
+    saved_handlers = root.handlers[:]
+    saved_level = root.level
+    stream = io.StringIO()
+    yield stream
+    root.handlers[:] = saved_handlers
+    root.setLevel(saved_level)
 
 
 @pytest.fixture()
