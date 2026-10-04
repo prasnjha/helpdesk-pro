@@ -23,10 +23,10 @@ flowchart TD
 
 Rules that follow from the diagram:
 
-- Domain rules live only in `src/domain`. They import Types, never FastAPI, SQLAlchemy or React.
+- Domain rules live only in `src/domain`. They import Types only. import-linter forbids domain imports of `src.api`, `src.service`, `src.repository`, `fastapi` and `sqlalchemy`. `src.config` is not restricted by that contract.
 - Services own transactions. Ticket insert and routing share one transaction (ASM-S7). Breach and escalation share one transaction.
 - Controllers check roles (NFR-04). Services never trust a role passed without a check at the API layer.
-- Only the router writes `queue_id` on create. An architecture test enforces this (NFR-08).
+- Only the router writes `queue_id` on create (NFR-08). No architecture test currently enforces this.
 - SLA code uses integer minutes only, with no float type and no `/` division (NFR-01).
 - Time comes from the injected Clock. No code calls the system clock directly, and no test sleeps.
 
@@ -54,7 +54,7 @@ sequenceDiagram
         API-->>C: 409 ROUTING_RULE_MISSING
     else Rule found
         SVC->>DB: Next HD id, insert ticket with queue and SLA policy version
-        SVC->>DB: Insert ROUTED history, TIMER_STARTED x2 events
+        SVC->>DB: Insert ROUTED history (no SlaEvent rows at create in this build)
         SVC->>DB: Commit
         API-->>C: 201 status OPEN
     end

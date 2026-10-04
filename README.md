@@ -15,11 +15,13 @@ manage versioned SLA policies. Synthetic seed data only.
 
 ```bash
 # 1. Install dependencies for both services
-./init.sh
-# (or manually: cd backend && uv sync && cd ../frontend && npm ci)
+cd backend && uv sync && cd ../frontend && npm ci && cd ..
 
 # 2. Start the backend (API on :8000) and the frontend (UI on :5173) together
 python scripts/dev.py
+
+# 3. Optional: with both servers running, ./init.sh health-checks :8000 and :5173
+./init.sh
 ```
 
 `scripts/dev.py` runs both servers and stops both on Ctrl+C. To start them in separate terminals
@@ -41,11 +43,15 @@ Then open http://localhost:5173.
 |---|---|---|
 | `DATABASE_URL` | local SQLite file under `backend/` | Backend database connection |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated list of origins the API accepts browser requests from (no wildcard) |
+| `LOG_LEVEL` | `INFO` | Log level for the JSON log lines (DEBUG, INFO, WARNING, ERROR) |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | Frontend API base URL (Vite, read at build time) |
+| `E2E_BASE_URL` | `http://localhost:5173` | Playwright base URL override (E2E tests only) |
 
 ### Optional: demo tickets
 
 The quick start above gives you an empty, working app. To also see the full lifecycle —
-queues, SLA breaches, a knowledge base article, every status — seed about 15 demo tickets
+queues, SLA breaches, every status — seed about 15 demo tickets. The seed creates no knowledge
+base article; publish one from a resolved ticket instead
 (titled `[DEMO] ...`) through the real API logic:
 
 ```bash
@@ -113,7 +119,7 @@ Business rules live in `backend/src/domain`. One-way dependencies only, enforced
 | `/tickets` | customer | Own ticket list, link to a new ticket |
 | `/tickets/new` | customer | Create a ticket |
 | `/tickets/:id` | customer | Ticket detail, SLA state, reply box |
-| `/agent/queues/:queue` | agent, admin | Queue with priority/status/escalated filters |
+| `/agent/queues/:queue` | agent, admin | Queue selector and priority filter |
 | `/agent/tickets/:id` | agent, admin | Ticket detail, SLA state, claim, reassign, status, notes, history and a publish-to-KB link |
 | `/admin/sla-policies` | admin | SLA policy editor with version history |
 | `/admin/dashboard` | admin | Dashboard tables |
@@ -123,13 +129,14 @@ Business rules live in `backend/src/domain`. One-way dependencies only, enforced
 
 ## CI
 
-`.gitlab-ci.yml` runs lint, type check, architecture check, and tests with coverage for both
-backend and frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every
-push. The backend coverage report (`backend/coverage.xml`, floor 80%) is kept as a build
-artifact. `.github/workflows/ci.yml` runs the same checks on GitHub.
+`.gitlab-ci.yml` runs lint, type check, architecture check, and tests for both backend and
+frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every push. Backend
+tests report coverage (`backend/coverage.xml`, floor 80%), kept as a build artifact. Frontend
+unit tests produce no coverage report. `.github/workflows/ci.yml` runs the same checks on GitHub.
 
 Both pipelines have an optional Claude Code review of the diff. It runs only when an API key is
 set: the `ANTHROPIC_API_KEY` repository secret on GitHub (pull requests, via
 `anthropics/claude-code-action`), or the `ANTHROPIC_API_KEY` CI/CD variable on GitLab (merge
-request pipelines, via `claude -p`, `allow_failure: true`). Without the key the job is skipped
-and the pipeline stays green.
+request pipelines, via `claude -p`, `allow_failure: true`). Without the key, the GitLab review
+job is not created. On GitHub the review job runs, but its steps are skipped. Either way the
+pipeline stays green.

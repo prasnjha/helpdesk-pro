@@ -10,9 +10,6 @@ from sqlalchemy import Engine, text
 
 from src.types.models import QueueRef
 
-_TERMINAL_STATUSES = ("RESOLVED", "CLOSED")
-_BREACH_EVENTS = ("BREACHED_RESPONSE", "BREACHED_RESOLUTION")
-
 
 def open_counts_by_queue(engine: Engine) -> list[tuple[QueueRef, int]]:
     """Count tickets per queue whose status is not RESOLVED or CLOSED."""
@@ -64,12 +61,9 @@ def breach_events_in_range(
 
 def escalation_count_in_range(engine: Engine, *, start: datetime, end: datetime) -> int:
     with engine.connect() as conn:
-        rows = (
-            conn.execute(
-                text("SELECT created_at FROM sla_event WHERE event = 'ESCALATED'")
-            )
-            .all()
-        )
+        rows = conn.execute(
+            text("SELECT created_at FROM sla_event WHERE event = 'ESCALATED'")
+        ).all()
     count = 0
     for (created_at,) in rows:
         if start <= datetime.fromisoformat(created_at) <= end:
