@@ -331,7 +331,7 @@
       "As admin1, GET the same endpoint and assert it also succeeds"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -346,7 +346,7 @@
       "As agent1, GET /api/agent/queues/not-a-real-queue/tickets and assert 404"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -362,7 +362,7 @@
       "As agent1, GET the endpoint and assert 403; request from > to and assert 422"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -377,7 +377,7 @@
       "Log in as customer1/admin1 and assert their respective roles"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -392,7 +392,7 @@
       "Render the page as agent1, click Claim, and assert the rendered assignee and status update from the refetch without navigating"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -407,7 +407,7 @@
       "Change the priority filter to Critical and assert the request includes priority=Critical and the list narrows"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -421,10 +421,10 @@
       "Save a new High version at 45/360 and assert it appears before the existing v1 row",
       "Assert the dashboard section renders the two required tables plus the escalations count"
     ],
-    "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
-    "failure_reason": null,
-    "failure_layer": null
+    "passes": false,
+    "last_evaluated": "2026-10-04T17:24:27Z",
+    "failure_reason": "E6-S2 AC3 requires open_by_queue, breached_by_priority and escalations_in_period to be shown as tables on the admin dashboard. Live verification (GET /admin/dashboard as admin1, screenshot frontend/e2e/eval-screens/D-admin-dashboard.png) shows escalations_in_period rendered as a <p> text line, not a <table>, in frontend/src/components/DashboardTables.tsx. Policy-editor history ordering (first half of F027) is verified correct and live. See docs/fix-loops/05-dashboard-escalations-not-a-table.md.",
+    "failure_layer": "browser"
   },
   {
     "id": "F028",
@@ -438,7 +438,7 @@
       "As customer1, view that article and assert Edit/Delete are absent"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -454,7 +454,7 @@
       "Ran the full suite: e2e/responsive.spec.ts passes at all three breakpoints with committed snapshots under frontend/e2e/snapshots/, and e2e/functional.spec.ts (login per role, create ticket, claim, valid+invalid status change, customer reply, closed read-only) passes 8/8"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -469,7 +469,7 @@
       "frontend:e2e uses the Playwright container image so the Chromium download restriction seen in this sandbox does not apply in a real CI runner"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -485,7 +485,7 @@
       "Assert at least one Billing Tier 2 ticket exists and is marked escalated"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -501,7 +501,7 @@
       "Found and fixed because the Playwright e2e suite (and any real browser) failed at the OPTIONS preflight stage with no CORS middleware present"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -517,7 +517,7 @@
       "Found and fixed during review: the page previously let an agent pick any status regardless of the current one"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   }

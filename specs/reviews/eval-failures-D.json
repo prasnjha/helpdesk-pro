@@ -1,0 +1,20 @@
+[
+  {
+    "failure": {
+      "layer": "playwright",
+      "gate": "evaluator",
+      "check": "E6-S2-AC3-dashboard-escalations-shown-as-table: /admin/dashboard renders escalations_in_period as a <table>",
+      "actual": {
+        "status": "rendered",
+        "body": "<p>Escalations in period: 3</p> (no surrounding or sibling <table> for this metric; open_by_queue and breached_by_priority each have their own <table data-testid=...>)"
+      },
+      "stack_trace": "No server-side exception. Confirmed by reading frontend/src/components/DashboardTables.tsx (renders <p>Escalations in period: {dashboard.escalations_in_period}</p> instead of a table) and visually in frontend/e2e/eval-screens/D-admin-dashboard.png (live screenshot, admin1, GET /admin/dashboard with from=to=2026-10-04). frontend/src/components/DashboardTables.test.tsx's test is named 'renders open_by_queue, breached_by_priority and escalations as tables' but its only assertion for this metric is screen.getByText('Escalations in period: 2'), a text match, not a table-element match, so the unit test does not catch the gap.",
+      "error_type": "assertion_error",
+      "files_likely_involved": [
+        "frontend/src/components/DashboardTables.tsx:49",
+        "frontend/src/components/DashboardTables.test.tsx"
+      ],
+      "prior_attempts": []
+    }
+  }
+]
