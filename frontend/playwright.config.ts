@@ -18,6 +18,12 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "list",
+  // Keep visual baselines at the existing e2e/snapshots/<name>.png paths
+  // instead of Playwright's default per-test-file/-project snapshot folder.
+  snapshotPathTemplate: "e2e/snapshots/{arg}{ext}",
+  expect: {
+    toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
+  },
   webServer: [
     {
       command: "bash ./e2e/start-backend-with-seed.sh",
