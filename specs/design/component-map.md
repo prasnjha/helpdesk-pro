@@ -19,7 +19,7 @@ Frontend under `frontend/src/`. Each page maps to the stories it implements. Rou
 | `pages/KbEditorPage.tsx` | `/agent/kb/new`, `/agent/kb/:id/edit` | agent, admin | E5-S2 | POST and PUT `/api/kb/articles`, DELETE `/api/kb/articles/{id}` |
 | `pages/AdminPoliciesPage.tsx` | `/admin/sla-policies` | admin | E6-S2 | GET and POST `/api/admin/sla-policies` |
 | `pages/AdminDashboardPage.tsx` | `/admin/dashboard` | admin | E6-S2 | GET `/api/admin/dashboard` |
-| `pages/AdminUsersPage.tsx` | `/admin/users` | admin | non-AC, seed-driven first | POST and PATCH `/api/admin/users`, PUT `/api/admin/users/{id}/team` |
+| `pages/AdminUsersPage.tsx` | `/admin/users` | admin | non-AC, seed-driven first | Not built in this version (deferred) |
 
 ## Components
 
@@ -34,12 +34,13 @@ Frontend under `frontend/src/`. Each page maps to the stories it implements. Rou
 | `components/StatusControl.tsx` | AgentTicketPage | Offers only the valid next states; surfaces 409 messages | E6-S1 |
 | `components/ThreadPanel.tsx` | CustomerTicketPage (public replies only), AgentTicketPage (replies and notes) | Renders conversation; notes only when role is agent | E3-S3, E3-S4, E6-S1 |
 | `components/ReplyBox.tsx` | CustomerTicketPage, AgentTicketPage | Body 1 to 5000 chars, posts a reply | E3-S4, E6-S1, E6-S3 |
-| `components/KbArticleEditor.tsx` | KbEditorPage | Title, body, tags with validation; `source_ticket_id` read-only | E5-S2 |
-| `components/PublishToKbButton.tsx` | AgentTicketPage | Visible for RESOLVED or CLOSED tickets; opens KbEditor with source id set | E5-S2, E6-S1 |
+| `components/KbArticleEditor.tsx` | KbEditorPage | Not built in this version (deferred) | E5-S2 |
+| `components/PublishToKbButton.tsx` | AgentTicketPage | Not built in this version (deferred) | E5-S2, E6-S1 |
 | `components/PolicyEditor.tsx` | AdminPoliciesPage | Priority, response and resolution minutes; disables edit on published versions | E6-S2 |
 | `components/PolicyHistoryTable.tsx` | AdminPoliciesPage | Versions newest first | E6-S2 |
 | `components/DashboardTables.tsx` | AdminDashboardPage | `open_by_queue`, `breached_by_priority`, `escalations_in_period` as tables | E6-S2 |
 | `components/ErrorBanner.tsx` | all pages | Shows `error.message` from the envelope | E2-S4 |
+| `components/Header.tsx` | shared layout (per-page usage not mapped) | Shared header: logo and product name | not mapped to a story |
 
 ## Shared client code
 
@@ -70,7 +71,7 @@ Layout references from Stitch. Colours, type and spacing come from `specs/design
 | `pages/KbEditorPage.tsx` | none, follow DESIGN.md and the closest screen |
 | `pages/AdminPoliciesPage.tsx` | `specs/design/mockups/admin-console.png` (shell and table style only) |
 | `pages/AdminDashboardPage.tsx` | none, follow DESIGN.md and the closest screen |
-| `pages/AdminUsersPage.tsx` | none, follow DESIGN.md and the closest screen |
+| `pages/AdminUsersPage.tsx` | Not built in this version (deferred) |
 
 The brand icon is `specs/design/mockups/helpdesk-pro-logo.png`. Use it in the header and on the login page.
 
@@ -87,4 +88,4 @@ The spec and this map win. Do not build any of the following:
 - Knowledge Base and article: Import Markdown, Propose Changes, helpful votes, view counts, table of contents, related articles, governance panel, Print/PDF.
 - Admin Console: Routing rules editor, Permissions and Roles tab, Cluster sync, and the "Access denied state" tab. Only SLA policies (list, new version, published versions read-only) is in scope.
 - Login: Remember this device, SSO / Okta button.
-- Pages with no mockup (KbEditorPage, AdminDashboardPage, AdminUsersPage) follow DESIGN.md and the closest screen.
+- Pages with no mockup (KbEditorPage, AdminDashboardPage) follow DESIGN.md and the closest screen. AdminUsersPage is not built in this version (deferred).

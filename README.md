@@ -41,6 +41,7 @@ Then open http://localhost:5173.
 |---|---|---|
 | `DATABASE_URL` | local SQLite file under `backend/` | Backend database connection |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated list of origins the API accepts browser requests from (no wildcard) |
+| `LOG_LEVEL` | `INFO` | Log level for the JSON log lines (DEBUG, INFO, WARNING, ERROR) |
 
 ### Optional: demo tickets
 
@@ -123,10 +124,10 @@ Business rules live in `backend/src/domain`. One-way dependencies only, enforced
 
 ## CI
 
-`.gitlab-ci.yml` runs lint, type check, architecture check, and tests with coverage for both
-backend and frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every
-push. The backend coverage report (`backend/coverage.xml`, floor 80%) is kept as a build
-artifact. `.github/workflows/ci.yml` runs the same checks on GitHub.
+`.gitlab-ci.yml` runs lint, type check, architecture check, and tests for both backend and
+frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every push. Backend
+tests report coverage (`backend/coverage.xml`, floor 80%), kept as a build artifact. Frontend
+unit tests produce no coverage report. `.github/workflows/ci.yml` runs the same checks on GitHub.
 
 Both pipelines have an optional Claude Code review of the diff. It runs only when an API key is
 set: the `ANTHROPIC_API_KEY` repository secret on GitHub (pull requests, via

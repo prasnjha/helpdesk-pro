@@ -78,16 +78,15 @@ Customer reply rules (lifecycle spec): on PENDING_CUSTOMER the reply and the mov
 
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
-| GET `/api/notifications` | customer, agent, admin | none | 200 array of the caller's own rows `{id, ticket_id, kind, created_at}`. `kind` is `PUBLIC_REPLY` or `STATUS_CHANGED` **(assumed names)**. | 401 |
+| GET `/api/notifications` | customer, agent, admin | none | Not built in this version (deferred). No route, table or delivery. | n/a |
 
-- Rows are written for the customer on a public agent reply and on a status change (A-14). Agents and admins receive no rows in this build.
-- Optional stretch story E6-S6. No delivery and no mark-as-read.
+- Optional stretch story E6-S6. Deferred: no notifications router, no migration, no delivery and no mark-as-read.
 
 ## Admin: routing and SLA policy
 
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
-| PUT `/api/admin/routing-rules/{category}` | admin | `{target_queue_id}` | 200 `{category, target_queue: {slug, name}}`. Applies to tickets created after the change only. | 403 (agent, customer); 404 unknown category |
+| PUT `/api/admin/routing-rules/{category}` | admin | `{target_queue_id}` | Not built in this version (deferred). Routing rules are seed data only. | n/a |
 | POST `/api/admin/sla-policies` | admin | `{priority, response_minutes, resolution_minutes}` | 201 `{id, priority, version, response_minutes, resolution_minutes, published_at}` | 403; 422 `VALIDATION_ERROR` (float, value below 1, or resolution below response) |
 | GET `/api/admin/sla-policies` | admin | query `priority?` | 200 array of all versions, newest first | 403 |
 | PATCH, PUT, DELETE `/api/admin/sla-policies/versions/{id}` | admin | none | 409 `POLICY_VERSION_IMMUTABLE`. No row changes. | 409; 403 (non-admin) |
@@ -95,12 +94,14 @@ Customer reply rules (lifecycle spec): on PENDING_CUSTOMER the reply and the mov
 
 ## Admin: teams and users (non-AC, may be seed-driven)
 
+Not built in this version (deferred). Teams and users are seed data only. The rows below are the planned contract.
+
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
-| POST `/api/admin/teams` | admin | `{name}` | 201 `{id, name, slug, tier}` | 403; 422 |
-| POST `/api/admin/users` | admin | `{username, role, team_id?}` | 201 | 403; 422 |
-| PATCH `/api/admin/users/{id}` | admin | `{active: false}` | 200. Deactivated users cannot log in. | 403; 404 |
-| PUT `/api/admin/users/{id}/team` | admin | `{team_id}` | 200 | 403; 404 |
+| POST `/api/admin/teams` | admin | `{name}` | Not built in this version (deferred) | n/a |
+| POST `/api/admin/users` | admin | `{username, role, team_id?}` | Not built in this version (deferred) | n/a |
+| PATCH `/api/admin/users/{id}` | admin | `{active: false}` | Not built in this version (deferred) | n/a |
+| PUT `/api/admin/users/{id}/team` | admin | `{team_id}` | Not built in this version (deferred) | n/a |
 
 ## Still open
 
