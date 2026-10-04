@@ -12,7 +12,7 @@ import { setSession } from "../state/session";
 const HOME_BY_ROLE: Record<string, string> = {
   customer: "/tickets",
   agent: "/agent/queues/billing",
-  admin: "/admin",
+  admin: "/admin/sla-policies",
 };
 
 export function LoginPage(): JSX.Element {

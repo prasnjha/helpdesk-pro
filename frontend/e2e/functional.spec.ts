@@ -34,7 +34,7 @@ test("E2S4_agent_login_lands_on_agent_workbench", async ({ page }) => {
 
 test("E2S4_admin_login_lands_on_admin_console", async ({ page }) => {
   await login(page, "admin1");
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/admin\/sla-policies$/);
 });
 
 test.describe("ticket lifecycle", () => {

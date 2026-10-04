@@ -1,8 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { AdminDashboardPage } from "./pages/AdminDashboardPage";
+import { AdminPoliciesPage } from "./pages/AdminPoliciesPage";
 import { AgentTicketPage } from "./pages/AgentTicketPage";
 import { AuthGuard } from "./components/AuthGuard";
-import { AdminConsolePage } from "./pages/AdminConsolePage";
 import { CustomerTicketPage } from "./pages/CustomerTicketPage";
 import { KbArticlePage } from "./pages/KbArticlePage";
 import { KbListPage } from "./pages/KbListPage";
@@ -56,10 +57,18 @@ export function App(): JSX.Element {
         }
       />
       <Route
-        path="/admin"
+        path="/admin/sla-policies"
         element={
           <AuthGuard allow={["admin"]}>
-            <AdminConsolePage />
+            <AdminPoliciesPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AuthGuard allow={["admin"]}>
+            <AdminDashboardPage />
           </AuthGuard>
         }
       />
