@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { ApiError, apiRequest } from "../api/client";
 import type { TicketSummary } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { Header } from "../components/Header";
 
 export function MyTicketsPage(): JSX.Element {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
@@ -20,7 +21,9 @@ export function MyTicketsPage(): JSX.Element {
   }, []);
 
   return (
-    <main>
+    <>
+      <Header />
+      <main>
       <h1>My tickets</h1>
       <ErrorBanner message={error} />
       <Link to="/tickets/new">New ticket</Link>
@@ -36,7 +39,9 @@ export function MyTicketsPage(): JSX.Element {
         <tbody>
           {tickets.map((ticket) => (
             <tr key={ticket.id}>
-              <td>{ticket.id}</td>
+              <td>
+                <Link to={`/tickets/${ticket.id}`}>{ticket.id}</Link>
+              </td>
               <td>{ticket.title}</td>
               <td>{ticket.status}</td>
               <td>{ticket.priority}</td>
@@ -44,6 +49,7 @@ export function MyTicketsPage(): JSX.Element {
           ))}
         </tbody>
       </table>
-    </main>
+      </main>
+    </>
   );
 }

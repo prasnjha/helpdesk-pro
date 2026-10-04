@@ -36,6 +36,27 @@ curl http://localhost:8000/health
 
 Then open http://localhost:5173.
 
+### Configuration
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `DATABASE_URL` | local SQLite file under `backend/` | Backend database connection |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated list of origins the API accepts browser requests from (no wildcard) |
+
+### Optional: demo tickets
+
+The quick start above gives you an empty, working app. To also see the full lifecycle —
+queues, SLA breaches, a knowledge base article, every status — seed about 15 demo tickets
+(titled `[DEMO] ...`) through the real API logic:
+
+```bash
+cd backend
+uv run python scripts/seed_demo_tickets.py
+```
+
+It is safe to re-run: it skips seeding if demo tickets already exist. One Billing ticket is
+seeded already escalated to the Billing Tier 2 queue after a response breach.
+
 ## Seed users (synthetic data)
 
 All seeded accounts share the password `Password123!`.
@@ -83,7 +104,21 @@ Strict layered architecture: Types/Models → Config → Repository → Service 
 Business rules live in `backend/src/domain`. One-way dependencies only, enforced by
 `import-linter`. See `.claude/architecture.md` for full rules.
 
+## Pages
+
+| Path | Role | Purpose |
+|---|---|---|
+| `/login` | any | Sign in |
+| `/tickets` | customer | Own ticket list, link to a new ticket |
+| `/tickets/new` | customer | Create a ticket |
+| `/tickets/:id` | customer, agent, admin | Ticket detail, SLA state, reply box; agents/admins also get claim, reassign, status, notes, history and a publish-to-KB link |
+| `/agent/queues` | agent, admin | Queue with priority/status/escalated filters |
+| `/admin` | admin | SLA policy editor with version history, plus the dashboard tables |
+| `/kb` | any | Knowledge base search and list |
+| `/kb/:id`, `/kb/new` | any (editor for agent/admin only) | Article detail, or the publish/edit form |
+
 ## CI
 
-`.gitlab-ci.yml` runs the backend pipeline (lint, type check, architecture check, tests with
-coverage) on every push. Frontend and E2E stages are added in a later session.
+`.gitlab-ci.yml` runs lint, type check, architecture check, and tests with coverage for both
+backend and frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every
+push.

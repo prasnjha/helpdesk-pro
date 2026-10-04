@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import Engine
 
 from src.api.error_handlers import register_error_handlers
@@ -11,11 +12,18 @@ from src.repository.token_store import TokenStore
 from src.types.clock import Clock
 
 
-def create_app(engine: Engine, clock: Clock) -> FastAPI:
+def create_app(engine: Engine, clock: Clock, cors_allowed_origins: list[str]) -> FastAPI:
     app = FastAPI(title="HelpDesk Pro API")
     app.state.engine = engine
     app.state.clock = clock
     app.state.token_store = TokenStore()
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_allowed_origins,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
 
     register_error_handlers(app)
 

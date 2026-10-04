@@ -11,4 +11,4 @@ settings = get_settings()
 engine = make_engine(settings)
 run_migrations(engine, settings.migrations_dir)
 
-app = create_app(engine, SystemClock())
+app = create_app(engine, SystemClock(), settings.cors_allowed_origins)
