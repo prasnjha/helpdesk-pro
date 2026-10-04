@@ -92,6 +92,16 @@ class SlaPolicyRecord:
 
 
 @dataclass(frozen=True)
+class SlaEventRecord:
+    id: int
+    ticket_id: str
+    event: str
+    timer: str | None
+    breached_at: str | None
+    created_at: str
+
+
+@dataclass(frozen=True)
 class TicketHistoryRecord:
     id: int
     ticket_id: str

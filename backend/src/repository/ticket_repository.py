@@ -194,6 +194,41 @@ def get_by_id(engine: Engine, ticket_id: str) -> TicketRecord | None:
         return _get_by_id(conn, ticket_id)
 
 
+def get_by_id_in_conn(conn: Connection, ticket_id: str) -> TicketRecord | None:
+    """Same read as `get_by_id`, for callers already inside a transaction."""
+    return _get_by_id(conn, ticket_id)
+
+
+def escalate(
+    conn: Connection, *, ticket_id: str, to_queue_id: int, now: datetime
+) -> TicketRecord:
+    """Move `ticket_id` to `to_queue_id` and set `escalated` (escalation_spec.md).
+    The status is never changed: ESCALATED is a flag, not a status (A-05).
+    Writes one TicketHistory row with event ESCALATED, actor `system`. Callers
+    own the transaction (`conn`) so this shares it with the breach SlaEvent
+    write it always accompanies.
+    """
+    created_at = now.isoformat()
+    conn.execute(
+        text(
+            "UPDATE tickets SET escalated = 1, queue_id = :to_queue_id, "
+            "version = version + 1, updated_at = :now WHERE id = :id"
+        ),
+        {"to_queue_id": to_queue_id, "now": created_at, "id": ticket_id},
+    )
+    conn.execute(
+        text(
+            "INSERT INTO ticket_history "
+            "(ticket_id, event, from_state, to_state, actor_id, correlation_id, created_at) "
+            "VALUES (:ticket_id, 'ESCALATED', NULL, NULL, 'system', NULL, :created_at)"
+        ),
+        {"ticket_id": ticket_id, "created_at": created_at},
+    )
+    updated = _get_by_id(conn, ticket_id)
+    assert updated is not None
+    return updated
+
+
 def _require_ticket(conn: Connection, ticket_id: str) -> TicketRecord:
     ticket = _get_by_id(conn, ticket_id)
     if ticket is None:
