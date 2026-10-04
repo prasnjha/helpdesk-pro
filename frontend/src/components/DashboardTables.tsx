@@ -46,7 +46,19 @@ export function DashboardTables({ dashboard }: DashboardTablesProps): JSX.Elemen
         </tbody>
       </table>
 
-      <p>Escalations in period: {dashboard.escalations_in_period}</p>
+      <h3>Escalations in period</h3>
+      <table data-testid="escalations-in-period-table">
+        <thead>
+          <tr>
+            <th>Escalations in period</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{dashboard.escalations_in_period}</td>
+          </tr>
+        </tbody>
+      </table>
     </>
   );
 }

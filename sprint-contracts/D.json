@@ -1,0 +1,187 @@
+{
+  "group": "D",
+  "stories": [
+    "E5-S1",
+    "E5-S2",
+    "E6-S1",
+    "E6-S2",
+    "E6-S3",
+    "E6-S4",
+    "E6-S5"
+  ],
+  "features": [
+    "F017",
+    "F018",
+    "F021",
+    "F022",
+    "F023",
+    "F024",
+    "F025",
+    "F026",
+    "F027",
+    "F028",
+    "F029",
+    "F030",
+    "F031",
+    "F032",
+    "F033"
+  ],
+  "contract": {
+    "api_checks": [
+      {
+        "id": "AC-09-publish-from-resolved-ticket",
+        "method": "POST",
+        "path": "/api/kb/articles",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": {
+          "source_ticket_id": "<a RESOLVED ticket id>",
+          "title": "string",
+          "body": "string",
+          "tags": ["string"]
+        },
+        "expected_status": 201,
+        "expected_body": { "source_ticket_id": "<same as request>" },
+        "description": "E5-S1 AC1 / F017: agent posts an article from a RESOLVED source ticket -> 201, source_ticket_id fixed to that ticket."
+      },
+      {
+        "id": "AC-09-publish-from-open-ticket-rejected",
+        "method": "POST",
+        "path": "/api/kb/articles",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "source_ticket_id": "<an OPEN ticket id>", "title": "x", "body": "y", "tags": ["z"] },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "SOURCE_TICKET_NOT_RESOLVED" } },
+        "description": "E5-S1 AC2: posting from an OPEN source ticket -> 409 SOURCE_TICKET_NOT_RESOLVED."
+      },
+      {
+        "id": "AC-09-customer-write-forbidden",
+        "method": "POST",
+        "path": "/api/kb/articles",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": { "source_ticket_id": "<a RESOLVED ticket id>", "title": "x", "body": "y", "tags": ["z"] },
+        "expected_status": 403,
+        "expected_body": { "error": { "code": "FORBIDDEN" } },
+        "description": "E5-S1 AC3 / F018: customer POST/PUT/DELETE on /api/kb/articles each return 403 and leave the article table unchanged. All three methods verified live on the same article id."
+      },
+      {
+        "id": "E6S1-agent-queue-filters",
+        "method": "GET",
+        "path": "/api/agent/queues/{queue}/tickets",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "expected_status": 200,
+        "expected_body": [],
+        "description": "F021: priority/status/escalated query params each narrow the result to exactly the matching tickets in that queue. Verified live against a queue whose membership is stable across repeated reads (billing-tier-2, already fully escalated) to avoid the SLA evaluate-and-escalate side effect of GET itself changing queue membership between calls on a still-breaching queue."
+      },
+      {
+        "id": "E6S1-agent-queue-customer-forbidden-unknown-404",
+        "method": "GET",
+        "path": "/api/agent/queues/{queue}/tickets",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "expected_status": 403,
+        "expected_body": { "error": { "code": "FORBIDDEN" } },
+        "description": "F022: customer call -> 403; an unknown queue slug (as agent) -> 404 NOT_FOUND. Both verified live."
+      },
+      {
+        "id": "E6S1-login-returns-role-and-username",
+        "method": "POST",
+        "path": "/api/auth/login",
+        "body": { "username": "agent1", "password": "Password123!" },
+        "expected_status": 200,
+        "expected_body": { "role": "agent", "username": "agent1" },
+        "description": "F024: login response includes role and username for all three roles."
+      },
+      {
+        "id": "E6S2-admin-dashboard",
+        "method": "GET",
+        "path": "/api/admin/dashboard",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "expected_status": 200,
+        "expected_body": { "open_by_queue": [], "breached_by_priority": [], "escalations_in_period": 0 },
+        "description": "F023: GET /api/admin/dashboard?from&to returns the three report sections; 403 for non-admin; 422 when to < from. All three verified live."
+      },
+      {
+        "id": "E6S2-sla-policy-new-version-first-and-immutable",
+        "method": "POST",
+        "path": "/api/admin/sla-policies",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "body": { "priority": "High", "response_minutes": 45, "resolution_minutes": 360 },
+        "expected_status": 201,
+        "expected_body": { "priority": "High", "version": 2 },
+        "description": "E6-S2 AC1: a new version is created and a follow-up GET /api/admin/sla-policies?priority=High lists it first (newest-first). PATCH/PUT/DELETE on a published version id still return 409 POLICY_VERSION_IMMUTABLE (re-verified live in this group, already covered by Group C's F019/F020)."
+      }
+    ],
+    "playwright_checks": [
+      {
+        "id": "E5S2-kb-customer-search-password-and-no-editor-controls",
+        "description": "F028: customer searches 'password' and sees matching titles; no 'New article' link; article detail page has no Edit/Delete.",
+        "url": "/kb",
+        "steps": [
+          { "action": "login", "value": "customer1" },
+          { "action": "fill", "selector": "#kb-search", "value": "password" },
+          { "action": "assert", "assertion": "a link with a title containing 'password' is visible" },
+          { "action": "assert", "assertion": "no 'New article' link is rendered" },
+          { "action": "click", "assertion": "open the matching article" },
+          { "action": "assert", "assertion": "no Edit link or Delete button is rendered" }
+        ]
+      },
+      {
+        "id": "E5S2-kb-agent-saves-tags",
+        "description": "F028: agent publishes an article with tags from a RESOLVED ticket and the saved article shows those tags.",
+        "url": "/agent/kb/new",
+        "steps": [
+          { "action": "login", "value": "agent1" },
+          { "action": "fill", "selector": "#article-title", "value": "title" },
+          { "action": "fill", "selector": "#article-body", "value": "body" },
+          { "action": "fill", "selector": "#article-tags", "value": "billing, proration" },
+          { "action": "click", "assertion": "Save" },
+          { "action": "assert", "assertion": "[data-testid=article-tags] shows 'billing, proration'" }
+        ]
+      },
+      {
+        "id": "E6S1-queue-priority-filter-and-breach-badge-and-claim-no-reload",
+        "description": "F026/F025: priority=Critical narrows the queue table to only Critical rows; a breached ticket's SLA-state cell shows BREACHED; claiming from the ticket detail updates the assignee/status without a page navigation.",
+        "url": "/agent/queues/billing-tier-2",
+        "steps": [
+          { "action": "login", "value": "agent1" },
+          { "action": "assert", "assertion": "[data-testid=queue-row-sla-state] contains BREACHED" },
+          { "action": "select", "selector": "#priority-filter", "value": "Critical" },
+          { "action": "assert", "assertion": "every [data-testid=queue-row] contains 'Critical'" },
+          { "action": "click", "assertion": "open a row, click Claim" },
+          { "action": "assert", "assertion": "[data-testid=ticket-assignee] updates in place, status becomes IN_PROGRESS" }
+        ]
+      },
+      {
+        "id": "E6S2-policy-history-order-and-dashboard-tables",
+        "description": "E6-S2 AC1/AC2/AC3: saving a new version puts it first in that priority's history table; no priority/version ever shows edit controls; the dashboard renders open_by_queue, breached_by_priority AND escalations_in_period as <table> elements. Originally found PARTIAL (escalations_in_period rendered as a <p>, not a <table>; see docs/fix-loops/05-dashboard-escalations-not-a-table.md). Fixed in commit 5aa9c7e (frontend/src/components/DashboardTables.tsx now renders a one-column escalations-in-period-table) and re-verified live: PASS.",
+        "url": "/admin/sla-policies",
+        "steps": [
+          { "action": "login", "value": "admin1" },
+          { "action": "select", "selector": "#policy-priority", "value": "Low" },
+          { "action": "fill", "selector": "#policy-response", "value": "20" },
+          { "action": "fill", "selector": "#policy-resolution", "value": "200" },
+          { "action": "click", "assertion": "Save new version" },
+          { "action": "assert", "assertion": "[data-testid=policy-row-Low] first row shows 20/200" },
+          { "action": "assert", "assertion": "no edit/save controls on any [data-testid^=policy-row-]" },
+          { "action": "navigate", "value": "/admin/dashboard" },
+          { "action": "assert", "assertion": "[data-testid=open-by-queue-table], [data-testid=breached-by-priority-table] and [data-testid=escalations-in-period-table] are all <table> elements" },
+          { "action": "assert", "assertion": "PASS after fix commit 5aa9c7e -- screenshot frontend/e2e/eval-screens/D-admin-dashboard-fixed.png" }
+        ]
+      },
+      {
+        "id": "E6S3-responsive-snapshots",
+        "description": "F029: a Playwright snapshot exists per breakpoint (375/768/1280) with no horizontal page scroll at 375px; this is the committed frontend/e2e/responsive.spec.ts run directly.",
+        "url": "/tickets",
+        "steps": [
+          { "action": "run", "value": "npx playwright test e2e/responsive.spec.ts" },
+          { "action": "assert", "assertion": "document.documentElement.scrollWidth <= window.innerWidth + 1 at 375px" },
+          { "action": "assert", "assertion": "one committed PNG per breakpoint under frontend/e2e/snapshots/" }
+        ]
+      }
+    ],
+    "architecture_checks": {
+      "layering": { "required": true, "description": "uv run lint-imports: layered architecture and domain-purity contracts kept." },
+      "typing": { "required": true, "description": "uv run mypy src/ --strict clean; frontend tsc -b --noEmit clean." },
+      "folder_structure": { "required": true, "description": "backend/src/{api,config,domain,repository,service,types}; frontend pages/components match component-map.md naming (AgentQueuePage/TicketDetailPage/AdminConsolePage deviations from an earlier session have since been refactored to WorkbenchPage/CustomerTicketPage+AgentTicketPage/AdminPoliciesPage+AdminDashboardPage, per git history)." }
+    }
+  }
+}

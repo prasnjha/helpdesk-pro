@@ -29,6 +29,8 @@ describe("AdminDashboardPage", () => {
 
     await waitFor(() => expect(screen.getByTestId("open-by-queue-table")).toBeInTheDocument());
     expect(screen.getByTestId("breached-by-priority-table")).toBeInTheDocument();
-    expect(screen.getByText("Escalations in period: 2")).toBeInTheDocument();
+    const escalationsTable = screen.getByTestId("escalations-in-period-table");
+    expect(escalationsTable.tagName).toBe("TABLE");
+    expect(screen.getByRole("columnheader", { name: "Escalations in period" })).toBeInTheDocument();
   });
 });

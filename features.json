@@ -75,7 +75,7 @@
       "Assert assignee is G-1, status is IN_PROGRESS, and one Assignment row has from null and to G-1"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -91,7 +91,7 @@
       "Assert a second Assignment row exists with from G-1 and to G-2"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -107,7 +107,7 @@
       "Assert exactly one TicketHistory row records from-state, to-state, and actor"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -123,7 +123,7 @@
       "Assert status is still OPEN and no history row was written"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -139,7 +139,7 @@
       "GET /api/tickets/{id}/sla and assert response target 60 and resolution target 480"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -155,7 +155,7 @@
       "On a second ticket, post an internal note at +5 min and a public reply at +20 min; assert stopped_at is +20 min"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -171,7 +171,7 @@
       "Assert queue is Billing Tier 2 and one BREACHED_RESPONSE and one ESCALATED SlaEvent exist"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -187,7 +187,7 @@
       "Assert the SlaEvent row count is unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -203,7 +203,7 @@
       "Assert the note body appears in no customer response"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -219,7 +219,7 @@
       "Assert the note and reply rows are unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -235,7 +235,7 @@
       "Assert status is OPEN and one TicketHistory row records PENDING_CUSTOMER to OPEN"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -251,7 +251,7 @@
       "Assert no TicketReply row was written"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -299,7 +299,7 @@
       "GET /api/admin/sla-policies?priority=High and assert v1 still shows 60 and 480"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -315,7 +315,7 @@
       "Assert the v1 row is unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -331,7 +331,7 @@
       "As admin1, GET the same endpoint and assert it also succeeds"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -346,7 +346,7 @@
       "As agent1, GET /api/agent/queues/not-a-real-queue/tickets and assert 404"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -362,7 +362,7 @@
       "As agent1, GET the endpoint and assert 403; request from > to and assert 422"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T12:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -377,7 +377,7 @@
       "Log in as customer1/admin1 and assert their respective roles"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -392,7 +392,7 @@
       "Render the page as agent1, click Claim, and assert the rendered assignee and status update from the refetch without navigating"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -407,7 +407,7 @@
       "Change the priority filter to Critical and assert the request includes priority=Critical and the list narrows"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -422,7 +422,7 @@
       "Assert the dashboard section renders the two required tables plus the escalations count"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:39:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -438,7 +438,7 @@
       "As customer1, view that article and assert Edit/Delete are absent"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -454,7 +454,7 @@
       "Ran the full suite: e2e/responsive.spec.ts passes at all three breakpoints with committed snapshots under frontend/e2e/snapshots/, and e2e/functional.spec.ts (login per role, create ticket, claim, valid+invalid status change, customer reply, closed read-only) passes 8/8"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -469,7 +469,7 @@
       "frontend:e2e uses the Playwright container image so the Chromium download restriction seen in this sandbox does not apply in a real CI runner"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -485,7 +485,7 @@
       "Assert at least one Billing Tier 2 ticket exists and is marked escalated"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -501,7 +501,7 @@
       "Found and fixed because the Playwright e2e suite (and any real browser) failed at the OPTIONS preflight stage with no CORS middleware present"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -517,7 +517,7 @@
       "Found and fixed during review: the page previously let an agent pick any status regardless of the current one"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T13:00:00Z",
+    "last_evaluated": "2026-10-04T17:24:27Z",
     "failure_reason": null,
     "failure_layer": null
   }
