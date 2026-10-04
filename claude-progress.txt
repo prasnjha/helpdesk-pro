@@ -195,3 +195,43 @@ next_action: Continue /auto --group D --mode solo with E5-S2 (KB pages),
   then E6-S2 (admin console UI), E6-S1 (agent workbench UI), E6-S3
   (responsive layout + Playwright setup), E6-S4 (README + seed), and
   optionally E6-S6, in that dependency order.
+
+=== Session 6 ===
+date: 2026-10-04T12:00:00Z
+mode: solo (manual, backend/CI/README-only scope; not a full /auto group D pass)
+groups_completed: [A, B, C]
+groups_remaining: [D]
+current_group: D backend scope only (this session explicitly excluded frontend pages)
+scope_this_session:
+  1. Knowledge base publish/CRUD (F017/F018, AC-09) - already done in Session 5, verified green
+  2. GET /api/tickets/{id} - found already implemented (Group B/C work); verified it matches
+     api-contracts.md (customer own-only 404, agent/admin full detail with notes/history/
+     replies); no changes needed
+  3. GET /api/agent/queues/{queue}/tickets (F021/F022) - built this session
+  4. GET /api/admin/dashboard (F023) - built this session
+  5. Admin users endpoints - skipped; no Group D story in specs/stories/sprint-4.md calls
+     for POST/PATCH/PUT /api/admin/users*; api-contracts.md marks them "non-AC, may be
+     seed-driven"
+last_commit: see git log; this session added commits for F021/F022 (test+feat),
+  F023 (test+feat), .gitlab-ci.yml, README.md, features.json, this file
+features_passing: 23 / 23 in features.json (F021, F022, F023 added and passing)
+coverage: 99% (floor 80%)
+backend_tests: 171 passed, 0 failed
+gates: ruff clean, mypy --strict clean, lint-imports clean (layered architecture + domain
+  purity contracts both kept)
+notes: GET /api/agent/queues/{queue}/tickets reuses the same per-read SLA
+  evaluate-and-escalate path as GET /api/tickets/{id}/sla, so each row's response_state/
+  resolution_state reflects a live evaluation (escalation_spec.md "no scheduler" design).
+  GET /api/admin/dashboard treats open_by_queue as a live snapshot of tickets not yet
+  RESOLVED/CLOSED (not time-scoped), while breached_by_priority and escalations_in_period
+  are counted over the from/to window via sla_event timestamps - the admin-console_spec.md
+  wording for this non-AC/"may be seed-driven" endpoint doesn't pin this down further, so
+  this is a documented interpretation rather than a spec gap requiring a stop.
+  Added .gitlab-ci.yml (stages: lint, typecheck, architecture, test-with-coverage; uv-based;
+  backend only, frontend left for the next session) since the capstone PDF requires
+  GitLab CI for this submission track; the pre-existing .github/workflows/ci.yml from
+  Session 5 was left untouched. Added README.md (prerequisites, quick start for both
+  services, seed user/role table, test and linter commands).
+next_action: Next session should continue with E5-S2 (KB pages), E6-S1 (agent workbench
+  UI), E6-S2 (admin console UI), E6-S3 (responsive layout + Playwright), E6-S4 (expanded
+  seed data), and add the frontend/E2E stages to .gitlab-ci.yml.

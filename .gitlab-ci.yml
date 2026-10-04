@@ -1,0 +1,57 @@
+# GitLab CI pipeline for HelpDesk Pro (capstone BC-AINE-007, section 7.5).
+#
+# Backend only in this session (Sprint 4 / Group D). Frontend lint/type/test
+# and Playwright E2E stages are left for the session that owns the frontend
+# work, per the session's scope.
+#
+# Note: Claude Code Action is a GitHub-specific integration with no GitLab
+# equivalent available in this environment, so it is not wired into this
+# pipeline; the capstone PDF accepts ".gitlab-ci.yml (or equivalent)".
+
+stages:
+  - lint
+  - typecheck
+  - architecture
+  - test
+
+default:
+  image: python:3.11-slim
+  before_script:
+    - cd backend
+    - pip install --no-cache-dir uv
+    - uv sync --extra dev
+  cache:
+    key:
+      files:
+        - backend/uv.lock
+    paths:
+      - backend/.venv
+
+backend:lint:
+  stage: lint
+  script:
+    - uv run ruff check .
+
+backend:typecheck:
+  stage: typecheck
+  script:
+    - uv run mypy src/
+
+backend:architecture:
+  stage: architecture
+  script:
+    - uv run lint-imports
+
+backend:test:
+  stage: test
+  script:
+    - uv run pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+  coverage: '/TOTAL.+ (\d+)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.xml
+    paths:
+      - backend/coverage.xml
+    expire_in: 30 days
