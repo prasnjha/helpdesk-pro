@@ -1,0 +1,180 @@
+{
+  "group": "B",
+  "stories": [
+    "E3-S1",
+    "E3-S2",
+    "E3-S3",
+    "E3-S4"
+  ],
+  "features": ["F005", "F006", "F007", "F008", "F013", "F014", "F015", "F016"],
+  "contract": {
+    "api_checks": [
+      {
+        "id": "AC-04-six-valid-edges",
+        "method": "POST",
+        "path": "/api/tickets/{id}/status",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "to_status": "<each of the six edges in turn>", "version": "<current version>" },
+        "expected_status": 200,
+        "expected_body": { "status": "<to_status>" },
+        "description": "AC-04 / E3-S1 AC1: each of the six valid edges in ticket-lifecycle_spec.md Section 2 (OPEN->IN_PROGRESS, IN_PROGRESS->PENDING_CUSTOMER, PENDING_CUSTOMER->RESOLVED, RESOLVED->CLOSED, IN_PROGRESS->RESOLVED, and PENDING_CUSTOMER->OPEN via customer reply) returns 200 and writes exactly one TicketHistory row recording from-state, to-state and actor. Verified live by walking one ticket through OPEN->IN_PROGRESS->PENDING_CUSTOMER->RESOLVED->CLOSED and a second ticket through IN_PROGRESS->RESOLVED and PENDING_CUSTOMER->OPEN (the last via POST /api/tickets/{id}/replies, see AC-08 checks below)."
+      },
+      {
+        "id": "AC-04-invalid-transition",
+        "method": "POST",
+        "path": "/api/tickets/{id}/status",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "to_status": "RESOLVED", "version": 1 },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "INVALID_TICKET_STATE" } },
+        "description": "AC-04 / E3-S1 AC2: an edge outside the six valid edges (OPEN -> RESOLVED) returns 409 INVALID_TICKET_STATE, the status is unchanged, and no history row is written."
+      },
+      {
+        "id": "AC-04-closed-ticket-immutable",
+        "method": "POST",
+        "path": "/api/tickets/{id}/claim",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "version": "<current version>" },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "TICKET_CLOSED_IMMUTABLE" } },
+        "description": "AC-04 / E3-S1 AC3: any write (claim, note, reply) to a CLOSED ticket returns 409 TICKET_CLOSED_IMMUTABLE. A status-transition attempt on a CLOSED ticket returns 409 INVALID_TICKET_STATE instead (ticket-lifecycle_spec.md AC-04 draws this distinction explicitly: the status endpoint reports the edge as invalid, every other write reports the ticket as immutable). Both were verified live on the same CLOSED ticket."
+      },
+      {
+        "id": "AC-03-claim-open-ticket",
+        "method": "POST",
+        "path": "/api/tickets/{id}/claim",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "version": 1 },
+        "expected_status": 200,
+        "expected_body": { "status": "IN_PROGRESS" },
+        "description": "AC-03 / E3-S2 AC1: claiming an OPEN ticket returns 200, sets the assignee, moves status to IN_PROGRESS, and writes one Assignment row with from=null."
+      },
+      {
+        "id": "AC-03-reassign-ticket",
+        "method": "POST",
+        "path": "/api/tickets/{id}/reassign",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "assignee_id": "AG-2", "version": 2 },
+        "expected_status": 200,
+        "expected_body": { "status": "IN_PROGRESS" },
+        "description": "AC-03 / E3-S2 AC2: reassigning an already-claimed ticket returns 200, status is unchanged, and a second Assignment row records the previous assignee in from and the new one in to."
+      },
+      {
+        "id": "AC-03-stale-version-conflict",
+        "method": "POST",
+        "path": "/api/tickets/{id}/claim",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "version": 99 },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "VERSION_CONFLICT" } },
+        "description": "AC-03 / E3-S2 AC3: a write carrying a stale version returns 409 VERSION_CONFLICT."
+      },
+      {
+        "id": "AC-07-agent-note-hidden-from-customer",
+        "method": "POST",
+        "path": "/api/tickets/{id}/notes",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "body": "Checked refund log" },
+        "expected_status": 201,
+        "expected_body": { "ticket_id": "<id>" },
+        "description": "AC-07 / E3-S3 AC1: an assigned agent's note returns 201 and the body never appears in GET /api/tickets/{id} or GET /api/tickets when called with the owning customer's token (notes array is empty for customers)."
+      },
+      {
+        "id": "AC-07-agent-public-reply-visible",
+        "method": "POST",
+        "path": "/api/tickets/{id}/replies",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "body": "We are looking into it" },
+        "expected_status": 201,
+        "expected_body": { "author_role": "agent" },
+        "description": "AC-07 / E3-S3 AC2: an agent's public reply returns 201 and is visible in the customer's GET /api/tickets/{id} replies array."
+      },
+      {
+        "id": "AC-07-notes-replies-immutable",
+        "method": "PUT",
+        "path": "/api/tickets/{id}/notes/{note_id}",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "body": "edited" },
+        "expected_status": 405,
+        "expected_body": { "error": { "code": "METHOD_NOT_ALLOWED" } },
+        "description": "AC-07 / E3-S3 AC3: PUT, PATCH and DELETE on a note id or a reply id all return 405 METHOD_NOT_ALLOWED and change no row. Verified for all three methods against both a note id and a reply id."
+      },
+      {
+        "id": "AC-08-reply-pending-customer-moves-to-open",
+        "method": "POST",
+        "path": "/api/tickets/{id}/replies",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": { "body": "Attached the invoice" },
+        "expected_status": 201,
+        "expected_body": { "status": "OPEN" },
+        "description": "AC-08 / E3-S4 AC1: the ticket's owning customer replying while the ticket is PENDING_CUSTOMER returns 201, moves the status to OPEN, and writes one TicketHistory row (PENDING_CUSTOMER -> OPEN) in the same transaction as the reply insert."
+      },
+      {
+        "id": "AC-08-reply-open-status-unchanged",
+        "method": "POST",
+        "path": "/api/tickets/{id}/replies",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": { "body": "Any update?" },
+        "expected_status": 201,
+        "expected_body": { "status": "OPEN" },
+        "description": "AC-08 / E3-S4 AC2: a customer reply on a ticket already OPEN or IN_PROGRESS returns 201 and leaves the status unchanged."
+      },
+      {
+        "id": "AC-08-reply-resolved-rejected",
+        "method": "POST",
+        "path": "/api/tickets/{id}/replies",
+        "headers": { "Authorization": "Bearer <customer-token>" },
+        "body": { "body": "trying to reply on resolved" },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "INVALID_TICKET_STATE" } },
+        "description": "AC-08 / E3-S4 AC3: a customer reply on a RESOLVED (or CLOSED) ticket returns 409 INVALID_TICKET_STATE and writes no reply row."
+      },
+      {
+        "id": "AC-08-reply-other-customers-ticket-404",
+        "method": "POST",
+        "path": "/api/tickets/{id}/replies",
+        "headers": { "Authorization": "Bearer <other-customer-token>" },
+        "body": { "body": "not my ticket" },
+        "expected_status": 404,
+        "expected_body": { "error": { "code": "NOT_FOUND" } },
+        "description": "AC-08 / E3-S4 AC3: a customer replying on another customer's ticket returns 404 (never 403), per api-contracts.md's cross-customer rule."
+      }
+    ],
+    "playwright_checks": [
+      {
+        "id": "PW-B-claim-reassign-note-reply",
+        "description": "Through the real browser: customer creates a ticket, agent1 claims it from the ticket page (assignee/status update in place), agent1 reassigns it to AG-2, agent2 adds an internal note, and the note is confirmed invisible on the customer's own view of the same ticket while the ticket remains otherwise visible (title, status, reply box).",
+        "url": "http://localhost:5173/login",
+        "steps": [
+          { "action": "login as customer1 and create a Technical/Medium ticket" },
+          { "action": "login as agent1, open the ticket, click Claim", "assertion": "ticket-assignee no longer reads Unassigned; ticket-status reads IN_PROGRESS" },
+          { "action": "fill Reassign to (user id) with AG-2 and submit", "assertion": "assignee becomes AG-2" },
+          { "action": "login as agent2, open the ticket, add an internal note", "assertion": "note body visible under Internal notes" },
+          { "action": "login as customer1, open the same ticket", "assertion": "note body is absent (0 matches); no Internal notes or History sections render; only title/status/reply box are present" }
+        ]
+      },
+      {
+        "id": "PW-B-functional-suite",
+        "description": "Group D's committed frontend/e2e/functional.spec.ts, which exercises the same Group B backend endpoints through the UI: ticket creation, agent claim from the workbench, a stale-version 409 surfaced as an error banner, AC-08's customer-reply-on-PENDING_CUSTOMER transition to OPEN, and a CLOSED ticket rendering read-only.",
+        "url": "http://localhost:5173/login",
+        "steps": [
+          { "action": "run `npx playwright test e2e/functional.spec.ts --project=desktop-1280`", "assertion": "all 8 tests pass" }
+        ]
+      }
+    ],
+    "architecture_checks": {
+      "layering": {
+        "required": true,
+        "description": "Backend code under backend/src/ continues to follow the one-way layering Types/Models -> Config -> Repository -> Service -> API -> UI, with lifecycle/claim/note/reply business rules confined to backend/src/domain and backend/src/service. Verified by `uv run lint-imports` passing with zero violations."
+      },
+      "typing": {
+        "required": true,
+        "description": "Backend source is statically typed with zero use of Any and passes `uv run mypy src/` in strict mode, including the new Assignment/TicketNote/TicketReply types added for Group B."
+      },
+      "folder_structure": {
+        "required": true,
+        "description": "backend/src/ still contains the expected top-level layer folders (types, config, repository, service, api, domain) with no cross-layer imports that bypass the declared boundaries."
+      }
+    }
+  }
+}

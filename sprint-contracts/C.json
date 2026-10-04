@@ -1,0 +1,128 @@
+{
+  "group": "C",
+  "stories": [
+    "E4-S1",
+    "E4-S2",
+    "E4-S3"
+  ],
+  "features": ["F009", "F010", "F011", "F012", "F019", "F020"],
+  "contract": {
+    "api_checks": [
+      {
+        "id": "AC-10-create-version-2",
+        "method": "POST",
+        "path": "/api/admin/sla-policies",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "body": { "priority": "High", "response_minutes": 45, "resolution_minutes": 360 },
+        "expected_status": 201,
+        "expected_body": { "priority": "High", "version": 2, "response_minutes": 45 },
+        "description": "AC-10 / E4-S1 AC1 / F019: admin posts a High 45/360 version and gets 201 version=2; GET /api/admin/sla-policies?priority=High afterward shows v1 unchanged (60/480)."
+      },
+      {
+        "id": "AC-10-published-version-immutable",
+        "method": "PATCH",
+        "path": "/api/admin/sla-policies/versions/{id}",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "expected_status": 409,
+        "expected_body": { "error": { "code": "POLICY_VERSION_IMMUTABLE" } },
+        "description": "AC-10 / E4-S1 AC2 / F020: PATCH, PUT and DELETE on a published version id (verified against v1, id=1) each return 409 POLICY_VERSION_IMMUTABLE and change no row. All three methods verified live on the same id."
+      },
+      {
+        "id": "AC-10-float-minutes-rejected",
+        "method": "POST",
+        "path": "/api/admin/sla-policies",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "body": { "priority": "High", "response_minutes": 45.5, "resolution_minutes": 360 },
+        "expected_status": 422,
+        "expected_body": { "error": { "code": "VALIDATION_ERROR" } },
+        "description": "AC-10 / E4-S1 AC3: a float response_minutes value returns 422 VALIDATION_ERROR naming the field, per NFR-01 integer-only SLA values."
+      },
+      {
+        "id": "AC-10-resolution-below-response-rejected",
+        "method": "POST",
+        "path": "/api/admin/sla-policies",
+        "headers": { "Authorization": "Bearer <admin-token>" },
+        "body": { "priority": "High", "response_minutes": 100, "resolution_minutes": 50 },
+        "expected_status": 422,
+        "expected_body": { "error": { "code": "VALIDATION_ERROR" } },
+        "description": "AC-10 / E4-S1 AC3: resolution_minutes below response_minutes returns 422 VALIDATION_ERROR."
+      },
+      {
+        "id": "AC-10-agent-caller-forbidden",
+        "method": "POST",
+        "path": "/api/admin/sla-policies",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "body": { "priority": "High", "response_minutes": 45, "resolution_minutes": 360 },
+        "expected_status": 403,
+        "expected_body": { "error": { "code": "FORBIDDEN" } },
+        "description": "AC-10 / E4-S1 AC3: an agent caller is rejected with 403 on create; also verified live for PATCH (mutate) and GET (list) on the same admin-only router."
+      },
+      {
+        "id": "AC-05-response-timer-on-track-at-risk-breached",
+        "method": "GET",
+        "path": "/api/tickets/{id}/sla",
+        "headers": { "Authorization": "Bearer <customer-or-agent-token>" },
+        "expected_status": 200,
+        "expected_body": { "response": { "state": "<ON_TRACK|AT_RISK|BREACHED>" } },
+        "description": "AC-05 / E4-S2 AC1 / F010: a Critical ticket's response timer reads ON_TRACK before the AT_RISK threshold (80% of target), AT_RISK from the threshold up to (not including) the target minute, and BREACHED at and after the target minute. The literal story minute marks (11/12/14:59/15 against a 15-minute target) are not driven against the live SystemClock-backed server -- there is no clock-override endpoint in this build (`backend/src/main.py` wires `SystemClock`, not `TestClock`; confirmed by reading `src/api/deps.py` and `src/main.py`, no admin/debug route exists to set `now`). The exact-minute/exact-second boundary is verified by `backend/tests/unit/test_domain_sla.py` (`test_AC05_critical_on_track_at_11_minutes`, `test_AC05_critical_at_risk_at_12_minutes`, `test_AC05_critical_at_risk_at_14_minutes_59_seconds`, `test_AC05_critical_breached_at_15_minutes`), which drives `evaluate_sla` with a fake `datetime` directly against the literal 15-minute target -- these are pure-function unit tests, not end-to-end, but they exercise the exact same `src/domain/sla.py` code path the live endpoint calls. Live verification instead uses a proportionally equivalent policy (an admin-created Critical version with response_minutes=5, resolution_minutes=20) and real wall-clock waits, confirming ON_TRACK at +0..+3 min, AT_RISK at +4 min, and BREACHED at +5 min on a real running ticket -- the same floor-division/threshold arithmetic, scaled down to fit a real-time evaluation window."
+      },
+      {
+        "id": "AC-05-note-does-not-stop-reply-does",
+        "method": "GET",
+        "path": "/api/tickets/{id}/sla",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "expected_status": 200,
+        "expected_body": { "response": { "stopped_at": "<reply-timestamp>" } },
+        "description": "AC-05 / E4-S2 AC2 / F010: an internal note does not set response.stopped_at; the first public reply does, and stopped_at (and elapsed_minutes) stay fixed at the reply time on every later read. Verified live with real wall-clock timestamps (note at +~1 min, reply at +~2 min, re-read at +~4 min past the breach deadline) rather than the story's literal +5/+20 min marks, since there is no clock-override in this build; the literal +5/+20 values are covered by `test_AC05_response_stops_at_first_public_reply_not_internal_note`."
+      },
+      {
+        "id": "AC-05-pending-customer-resolution-keeps-running-stops-at-resolved",
+        "method": "GET",
+        "path": "/api/tickets/{id}/sla",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "expected_status": 200,
+        "expected_body": { "resolution": { "stopped_at": null } },
+        "description": "AC-05 / E4-S2 AC3 / F010: while a ticket is PENDING_CUSTOMER, resolution.elapsed_minutes keeps increasing and resolution.stopped_at stays null; once the ticket reaches RESOLVED, resolution.stopped_at is set and elapsed_minutes stays fixed on later reads. Verified live over real minutes (PENDING_CUSTOMER held for ~2 min, then RESOLVED) rather than the story's literal 200-minute mark; the exact 200-minute value is covered by `test_AC05_pending_customer_resolution_timer_keeps_running` and `test_AC05_resolution_stops_at_resolved_and_stays_fixed`."
+      },
+      {
+        "id": "AC-06-breach-escalates-billing-to-tier-2",
+        "method": "GET",
+        "path": "/api/tickets/{id}",
+        "headers": { "Authorization": "Bearer <customer-or-agent-token>" },
+        "expected_status": 200,
+        "expected_body": { "escalated": true, "queue": { "slug": "billing-tier-2", "name": "Billing Tier 2" } },
+        "description": "AC-06 / E4-S3 AC1 / F011: once a Billing ticket's response timer breaches, the next read sets escalated=true, moves the queue to Billing Tier 2, and leaves status unchanged. Verified live on a Billing/Critical ticket under the scaled-down 5-minute response policy described above; one BREACHED_RESPONSE and one ESCALATED row confirmed by a read-only query of the sla_event table."
+      },
+      {
+        "id": "AC-06-repeat-read-writes-no-new-events",
+        "method": "GET",
+        "path": "/api/tickets/{id}/sla",
+        "headers": { "Authorization": "Bearer <customer-or-agent-token>" },
+        "expected_status": 200,
+        "description": "AC-06 / E4-S3 AC2 / F012: reading an already-escalated ticket's SLA again writes no new SlaEvent rows. Verified live by a read-only sla_event row count before and after a second GET (2 rows, unchanged)."
+      },
+      {
+        "id": "AC-06-closed-ticket-prior-breach-writes-no-new-events",
+        "method": "GET",
+        "path": "/api/tickets/{id}/sla",
+        "headers": { "Authorization": "Bearer <agent-token>" },
+        "expected_status": 200,
+        "description": "AC-06 / E4-S3 AC3 / F012: a CLOSED ticket with a prior breach writes no new SlaEvent rows on read. Verified live by walking the same breached ticket through claim -> RESOLVED -> CLOSED and confirming the sla_event row count is still 2 after a post-CLOSED GET."
+      }
+    ],
+    "architecture_checks": {
+      "layering": {
+        "required": true,
+        "description": "Backend code under backend/src/ continues to follow the one-way layering Types/Models -> Config -> Repository -> Service -> API -> UI, with SLA timer math (src/domain/sla.py), policy validation (src/domain/sla_policy.py) and tier-2 routing (src/domain/escalation.py) confined to backend/src/domain and importing nothing from FastAPI or SQLAlchemy. Verified by `uv run lint-imports` passing with zero violations."
+      },
+      "typing": {
+        "required": true,
+        "description": "Backend source is statically typed with zero use of Any and passes `uv run mypy src/` in strict mode. SLA minute fields (response_minutes, resolution_minutes, elapsed_minutes, target_minutes) are integer types only; `src/domain/sla.py` and `src/domain/sla_policy.py` use no float arithmetic, `/`, `round()` or `.total_seconds()`, per backend/src/domain/CLAUDE.md."
+      },
+      "folder_structure": {
+        "required": true,
+        "description": "backend/src/ still contains the expected top-level layer folders (types, config, repository, service, api, domain) with no cross-layer imports that bypass the declared boundaries."
+      }
+    }
+  }
+}

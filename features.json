@@ -75,7 +75,7 @@
       "Assert assignee is G-1, status is IN_PROGRESS, and one Assignment row has from null and to G-1"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -91,7 +91,7 @@
       "Assert a second Assignment row exists with from G-1 and to G-2"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -107,7 +107,7 @@
       "Assert exactly one TicketHistory row records from-state, to-state, and actor"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -123,7 +123,7 @@
       "Assert status is still OPEN and no history row was written"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -139,7 +139,7 @@
       "GET /api/tickets/{id}/sla and assert response target 60 and resolution target 480"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -155,7 +155,7 @@
       "On a second ticket, post an internal note at +5 min and a public reply at +20 min; assert stopped_at is +20 min"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -171,7 +171,7 @@
       "Assert queue is Billing Tier 2 and one BREACHED_RESPONSE and one ESCALATED SlaEvent exist"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -187,7 +187,7 @@
       "Assert the SlaEvent row count is unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -203,7 +203,7 @@
       "Assert the note body appears in no customer response"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -219,7 +219,7 @@
       "Assert the note and reply rows are unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -235,7 +235,7 @@
       "Assert status is OPEN and one TicketHistory row records PENDING_CUSTOMER to OPEN"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -251,7 +251,7 @@
       "Assert no TicketReply row was written"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-03T15:00:00Z",
+    "last_evaluated": "2026-10-04T16:57:42Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -299,7 +299,7 @@
       "GET /api/admin/sla-policies?priority=High and assert v1 still shows 60 and 480"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -315,7 +315,7 @@
       "Assert the v1 row is unchanged"
     ],
     "passes": true,
-    "last_evaluated": "2026-10-04T07:18:20Z",
+    "last_evaluated": "2026-10-04T17:12:08Z",
     "failure_reason": null,
     "failure_layer": null
   },
