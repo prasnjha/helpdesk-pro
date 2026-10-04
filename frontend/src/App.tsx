@@ -2,13 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthGuard } from "./components/AuthGuard";
 import { AdminConsolePage } from "./pages/AdminConsolePage";
-import { AgentQueuePage } from "./pages/AgentQueuePage";
 import { KbArticlePage } from "./pages/KbArticlePage";
 import { KbListPage } from "./pages/KbListPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyTicketsPage } from "./pages/MyTicketsPage";
 import { NewTicketPage } from "./pages/NewTicketPage";
 import { TicketDetailPage } from "./pages/TicketDetailPage";
+import { WorkbenchPage } from "./pages/WorkbenchPage";
 
 export function App(): JSX.Element {
   return (
@@ -39,10 +39,10 @@ export function App(): JSX.Element {
         }
       />
       <Route
-        path="/agent/queues"
+        path="/agent/queues/:queue"
         element={
           <AuthGuard allow={["agent", "admin"]}>
-            <AgentQueuePage />
+            <WorkbenchPage />
           </AuthGuard>
         }
       />
