@@ -29,10 +29,7 @@ def test_NFR03_phone_numbers_are_masked(text: str) -> None:
 
 
 def test_NFR03_email_addresses_are_masked() -> None:
-    assert (
-        redact_text("Reply to jane.doe@example.test today")
-        == "Reply to [REDACTED_EMAIL] today"
-    )
+    assert redact_text("Reply to jane.doe@example.test today") == "Reply to [REDACTED_EMAIL] today"
 
 
 def test_NFR03_identifiers_and_timestamps_are_not_masked() -> None:

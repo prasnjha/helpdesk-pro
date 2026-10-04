@@ -27,9 +27,7 @@ def _create_closed_ticket(client: TestClient, engine) -> str:
     resp = client.post("/api/tickets", json=VALID_PAYLOAD, headers=headers)
     ticket_id: str = resp.json()["id"]
     with engine.begin() as conn:
-        conn.execute(
-            text("UPDATE tickets SET status = 'CLOSED' WHERE id = :id"), {"id": ticket_id}
-        )
+        conn.execute(text("UPDATE tickets SET status = 'CLOSED' WHERE id = :id"), {"id": ticket_id})
     return ticket_id
 
 
