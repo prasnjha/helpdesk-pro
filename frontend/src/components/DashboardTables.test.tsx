@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { DashboardTables } from "./DashboardTables";
@@ -15,6 +15,12 @@ describe("DashboardTables", () => {
     expect(screen.getByTestId("open-by-queue-table")).toBeInTheDocument();
     expect(screen.getByText("Billing")).toBeInTheDocument();
     expect(screen.getByTestId("breached-by-priority-table")).toBeInTheDocument();
-    expect(screen.getByText("Escalations in period: 2")).toBeInTheDocument();
+
+    const escalationsTable = screen.getByTestId("escalations-in-period-table");
+    expect(escalationsTable).toBeInTheDocument();
+    expect(escalationsTable.tagName).toBe("TABLE");
+    expect(screen.getByRole("columnheader", { name: "Escalations in period" })).toBeInTheDocument();
+    const row = within(escalationsTable).getAllByRole("row")[1];
+    expect(within(row).getByRole("cell", { name: "2" })).toBeInTheDocument();
   });
 });
