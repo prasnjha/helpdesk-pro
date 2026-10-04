@@ -148,3 +148,50 @@ next_action: Run /auto --group D to implement CI pipeline, KB publish/CRUD
   API and pages, admin console UI, agent workbench UI, responsive layout,
   README quick-start, and optionally the stretch notification inbox
   (E6-S5, E5-S1, E6-S2, E5-S2, E6-S1, E6-S3, E6-S4, E6-S6).
+
+=== Session 5 ===
+date: 2026-10-04T09:40:00Z
+mode: solo
+groups_completed: [A, B, C]
+groups_remaining: [D]
+current_group: D (in progress)
+current_stories: [E5-S1 done, E6-S5 done, E5-S2 pending, E6-S2 pending, E6-S1 pending, E6-S3 pending, E6-S4 pending, E6-S6 optional/pending]
+sprint_contract: none (solo mode, no sprint contract negotiation)
+last_commit: 5c61f22 "feat: add CI pipeline (E6-S5)"
+features_passing: 20 / 20 (F017/F018 now pass; group D has no further
+  feature rows in features.json yet for E5-S2/E6-S1/E6-S2/E6-S3/E6-S4/E6-S6)
+coverage: 99%
+learned_rules: 1
+blocked_stories: none
+notes: Implemented E5-S1 (KB publish and CRUD API, AC-09): new
+  src/domain/kb.py (tag rules: 1-10 entries, lowercase, 1-30 chars),
+  src/repository/kb_repository.py + migration 008_kb.sql (kb_article,
+  kb_article_tag tables; mutable, not append-only), src/service/kb_service.py,
+  src/api/routers/kb.py (POST/GET/GET-by-id/PUT/DELETE under
+  /api/kb/articles; 403 for customer writes, 409 SOURCE_TICKET_NOT_RESOLVED
+  unless source ticket is RESOLVED or CLOSED, 422 if PUT tries to change
+  source_ticket_id via pydantic extra="forbid"). 17 new backend tests
+  (unit + integration), all named with AC-09 or F017/F018. Also
+  implemented E6-S5 (CI pipeline): .github/workflows/ci.yml with backend
+  (ruff, mypy --strict, lint-imports, pytest --cov-fail-under=80),
+  frontend (eslint, tsc, vitest) and an e2e job that runs Playwright once
+  a playwright.config exists (added by E6-S3) and no-ops until then.
+  All 158 backend tests pass; ruff, mypy --strict, and lint-imports are
+  clean; coverage holds at 99% (floor 80%, baseline 99%, unchanged).
+  Frontend: npm test (11 tests), lint, and typecheck all pass unchanged
+  (no frontend code touched this session).
+  NOT done this session, still open for group D: E5-S2 (KB pages UI),
+  E6-S2 (admin console UI incl. SLA policy editor + dashboard tables),
+  E6-S1 (agent workbench UI: queue filters, ticket detail, claim/
+  reassign/status/note/reply/publish-to-KB), E6-S3 (responsive layout at
+  375/768/1280px + Playwright snapshot tests), E6-S4 (README quick-start
+  + ~15 seeded sample tickets across all 5 states incl. a Billing Tier 2
+  breach), E6-S6 (optional stretch: notification rows + inbox). These are
+  the bulk of group D's remaining scope (3 new UI surfaces, the first
+  Playwright suite, and the seed/README work) and were not attempted this
+  turn; features.json has no rows yet for these six stories, so the
+  generator proposing them should also add those feature rows.
+next_action: Continue /auto --group D --mode solo with E5-S2 (KB pages),
+  then E6-S2 (admin console UI), E6-S1 (agent workbench UI), E6-S3
+  (responsive layout + Playwright setup), E6-S4 (README + seed), and
+  optionally E6-S6, in that dependency order.
