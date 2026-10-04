@@ -21,7 +21,7 @@ Source: `specs/app_spec.md`, feature specs, `specs/stories/`. Items marked **(as
 | Method and path | Roles | Request | Success | Errors |
 |---|---|---|---|---|
 | GET `/health` | none | none | 200 `{"status": "ok"}` | none (NFR-07: 200 within 1 s of startup) |
-| POST `/api/auth/login` | none | `{"username", "password"}` | 200 `{"token"}` | 401 `INVALID_CREDENTIALS` (also for deactivated users) |
+| POST `/api/auth/login` | none | `{"username", "password"}` | 200 `{"token", "role", "username"}`. `role` and `username` were added in Sprint 4 (E6-S1/E6-S2) so the UI can route by role without a separate call. | 401 `INVALID_CREDENTIALS` (also for deactivated users) |
 
 ## Tickets (customer intake, reads and detail)
 

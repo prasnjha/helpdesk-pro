@@ -365,5 +365,128 @@
     "last_evaluated": "2026-10-04T12:00:00Z",
     "failure_reason": null,
     "failure_layer": null
+  },
+  {
+    "id": "F024",
+    "category": "functional",
+    "story": "E6-S1",
+    "group": "D",
+    "description": "POST /api/auth/login response includes role and username so the UI can route by role without a separate call",
+    "steps": [
+      "Log in as agent1 and assert the response has role=agent and username=agent1",
+      "Log in as customer1/admin1 and assert their respective roles"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F025",
+    "category": "ui",
+    "story": "E6-S1",
+    "group": "D",
+    "description": "TicketDetailPage: a customer sees the reply box but no notes/history/actions; an agent's claim updates assignee/status in place, no page reload",
+    "steps": [
+      "Render the page as customer1: assert the reply form is present and notes/history/actions sections are absent",
+      "Render the page as agent1, click Claim, and assert the rendered assignee and status update from the refetch without navigating"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F026",
+    "category": "ui",
+    "story": "E6-S1",
+    "group": "D",
+    "description": "AgentQueuePage lists a queue's tickets, filters by priority, and shows each row's worst SLA state (BREACHED taking priority over AT_RISK/ON_TRACK)",
+    "steps": [
+      "Load the Billing queue and assert both seeded rows render with their SLA state",
+      "Change the priority filter to Critical and assert the request includes priority=Critical and the list narrows"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F027",
+    "category": "ui",
+    "story": "E6-S2",
+    "group": "D",
+    "description": "AdminConsolePage: saving a new SLA policy version puts it first in that priority's history (no edit controls exist for any version), and the dashboard renders open_by_queue/breached_by_priority/escalations_in_period as tables",
+    "steps": [
+      "Save a new High version at 45/360 and assert it appears before the existing v1 row",
+      "Assert the dashboard section renders the two required tables plus the escalations count"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F028",
+    "category": "ui",
+    "story": "E5-S2",
+    "group": "D",
+    "description": "KbListPage search lists matching titles with no editor controls for a customer (an agent sees a New article link); KbArticlePage saves tags that then show on the saved article, and a customer sees no Edit/Delete",
+    "steps": [
+      "As customer1, search 'password' and assert the matching title renders and 'New article' is absent",
+      "As agent1, save a new article with tags 'password, login' and assert the saved article's tags render",
+      "As customer1, view that article and assert Edit/Delete are absent"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F029",
+    "category": "ui",
+    "story": "E6-S3",
+    "group": "D",
+    "description": "Responsive layout at 375/768/1280 px: a global stylesheet keeps tables from causing page-level horizontal scroll at 375 px, and Playwright projects capture one snapshot per breakpoint",
+    "steps": [
+      "Added src/styles/global.css (box-sizing, 100%-width form controls, table-scrolls-not-page at <=480px) imported from main.tsx",
+      "Added playwright.config.ts with three projects (375/768/1280) and e2e/responsive.spec.ts asserting document.documentElement.scrollWidth <= window.innerWidth at 375 px and 1280 px, and that both the customer and agent views render at 768 px",
+      "Playwright's Chromium binary could not be downloaded in this sandbox (cdn.playwright.dev is not on the egress allowlist; see .claude/state/failures.md) — the spec is unexecuted here. npm test/lint/typecheck (gates 1-2) pass; a CI runner or a dev machine with network access to cdn.playwright.dev must run `npm run e2e` before this is marked proven"
+    ],
+    "passes": false,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": "Playwright browser download blocked by sandbox egress allowlist (cdn.playwright.dev); e2e/responsive.spec.ts has not actually executed yet",
+    "failure_layer": "e2e"
+  },
+  {
+    "id": "F030",
+    "category": "config",
+    "story": "E6-S5",
+    "group": "D",
+    "description": "CI pipeline adds frontend lint/typecheck/test stages and a Playwright e2e stage (build, serve, boot the API, run the three viewport projects) alongside the existing backend stages",
+    "steps": [
+      "Added frontend:lint, frontend:typecheck, frontend:test and frontend:e2e jobs to .gitlab-ci.yml",
+      "frontend:e2e uses the Playwright container image so the Chromium download restriction seen in this sandbox does not apply in a real CI runner"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F031",
+    "category": "functional",
+    "story": "E6-S4",
+    "group": "D",
+    "description": "scripts/seed_demo_tickets.py seeds ~15 demo tickets across all five lifecycle states through the real service layer, including one Billing ticket already escalated to Billing Tier 2 after a response breach; idempotent on rerun",
+    "steps": [
+      "Run seed() against a migrated engine and assert it creates 15 tickets and returns 0 (no-op) on a second run",
+      "Assert the resulting tickets' statuses cover OPEN, IN_PROGRESS, PENDING_CUSTOMER, RESOLVED and CLOSED",
+      "Assert at least one Billing Tier 2 ticket exists and is marked escalated"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T13:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
   }
 ]

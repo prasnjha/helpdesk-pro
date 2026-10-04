@@ -36,7 +36,9 @@ export function MyTicketsPage(): JSX.Element {
         <tbody>
           {tickets.map((ticket) => (
             <tr key={ticket.id}>
-              <td>{ticket.id}</td>
+              <td>
+                <Link to={`/tickets/${ticket.id}`}>{ticket.id}</Link>
+              </td>
               <td>{ticket.title}</td>
               <td>{ticket.status}</td>
               <td>{ticket.priority}</td>

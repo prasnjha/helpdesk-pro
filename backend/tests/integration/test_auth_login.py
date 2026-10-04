@@ -11,6 +11,18 @@ def test_E1S2_login_with_correct_password_returns_token(client: TestClient) -> N
     assert resp.json()["token"]
 
 
+def test_E6S1_login_response_includes_role_and_username_for_ui_routing(
+    client: TestClient,
+) -> None:
+    resp = client.post(
+        "/api/auth/login", json={"username": "agent1", "password": "Password123!"}
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["role"] == "agent"
+    assert body["username"] == "agent1"
+
+
 def test_E1S2_login_with_wrong_password_returns_401_invalid_credentials(
     client: TestClient,
 ) -> None:

@@ -1,0 +1,54 @@
+/* Responsive baseline (frontend/CLAUDE.md, E6-S3): 375, 768, 1280 px, no
+   horizontal page scroll at 375 px. Visual design tokens live in
+   specs/design/DESIGN.md; this file only keeps layout from overflowing. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  max-width: 100%;
+}
+
+main {
+  padding: 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+img,
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+/* Tables are the most likely cause of horizontal overflow on a narrow
+   viewport (the customer ticket list, agent queue, admin policy history).
+   Scroll the table itself instead of the page. */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

@@ -1,9 +1,5 @@
 # GitLab CI pipeline for HelpDesk Pro (capstone BC-AINE-007, section 7.5).
 #
-# Backend only in this session (Sprint 4 / Group D). Frontend lint/type/test
-# and Playwright E2E stages are left for the session that owns the frontend
-# work, per the session's scope.
-#
 # Note: Claude Code Action is a GitHub-specific integration with no GitLab
 # equivalent available in this environment, so it is not wired into this
 # pipeline; the capstone PDF accepts ".gitlab-ci.yml (or equivalent)".
@@ -13,8 +9,10 @@ stages:
   - typecheck
   - architecture
   - test
+  - e2e
 
-default:
+backend:lint:
+  stage: lint
   image: python:3.11-slim
   before_script:
     - cd backend
@@ -26,24 +24,54 @@ default:
         - backend/uv.lock
     paths:
       - backend/.venv
-
-backend:lint:
-  stage: lint
   script:
     - uv run ruff check .
 
 backend:typecheck:
   stage: typecheck
+  image: python:3.11-slim
+  before_script:
+    - cd backend
+    - pip install --no-cache-dir uv
+    - uv sync --extra dev
+  cache:
+    key:
+      files:
+        - backend/uv.lock
+    paths:
+      - backend/.venv
   script:
     - uv run mypy src/
 
 backend:architecture:
   stage: architecture
+  image: python:3.11-slim
+  before_script:
+    - cd backend
+    - pip install --no-cache-dir uv
+    - uv sync --extra dev
+  cache:
+    key:
+      files:
+        - backend/uv.lock
+    paths:
+      - backend/.venv
   script:
     - uv run lint-imports
 
 backend:test:
   stage: test
+  image: python:3.11-slim
+  before_script:
+    - cd backend
+    - pip install --no-cache-dir uv
+    - uv sync --extra dev
+  cache:
+    key:
+      files:
+        - backend/uv.lock
+    paths:
+      - backend/.venv
   script:
     - uv run pytest -q --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=80
   coverage: '/TOTAL.+ (\d+)%/'
@@ -55,3 +83,72 @@ backend:test:
     paths:
       - backend/coverage.xml
     expire_in: 30 days
+
+frontend:lint:
+  stage: lint
+  image: node:20-slim
+  before_script:
+    - cd frontend
+    - npm ci
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - npm run lint
+
+frontend:typecheck:
+  stage: typecheck
+  image: node:20-slim
+  before_script:
+    - cd frontend
+    - npm ci
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - npm run typecheck
+
+frontend:test:
+  stage: test
+  image: node:20-slim
+  before_script:
+    - cd frontend
+    - npm ci
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - npm test
+
+frontend:e2e:
+  stage: e2e
+  image: mcr.microsoft.com/playwright:v1.63.0-noble
+  before_script:
+    - cd frontend
+    - npm ci
+  script:
+    # Build and serve the UI, boot the API against a throwaway sqlite file,
+    # then run the three responsive Playwright projects (E6-S3, E6-S5).
+    - npm run build
+    - npx serve -s dist -l 5173 &
+    - cd ../backend
+    - pip install --no-cache-dir uv
+    - uv sync --extra dev
+    - DATABASE_URL=sqlite:///$(pwd)/ci.db uv run uvicorn src.main:app --port 8000 &
+    - sleep 3
+    - cd ../frontend
+    - npx playwright test
+  artifacts:
+    paths:
+      - frontend/test-results
+    when: always
+    expire_in: 14 days
