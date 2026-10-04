@@ -52,3 +52,39 @@ Frontend under `frontend/src/`. Each page maps to the stories it implements. Rou
 ## Responsive targets
 
 375 px (customer ticket list and reply box, no horizontal scroll), 768 px (customer and agent views), 1280 px (full agent workbench). Covered by E6-S3.
+
+## Mockups (reference only)
+
+Layout references from Stitch. Colours, type and spacing come from `specs/design/DESIGN.md`. If a mockup shows something this map does not list, the map wins and the extra is skipped.
+
+| Page (file) | Mockup file |
+|---|---|
+| `pages/LoginPage.tsx` | `specs/design/mockups/login.png` |
+| `pages/MyTicketsPage.tsx` | `specs/design/mockups/my-tickets.png` |
+| `pages/NewTicketPage.tsx` | `specs/design/mockups/new-ticket.png` |
+| `pages/CustomerTicketPage.tsx` | `specs/design/mockups/ticket-detail-customer-view.png` |
+| `pages/KbSearchPage.tsx` | `specs/design/mockups/knowledge-base.png` |
+| `pages/KbArticlePage.tsx` | `specs/design/mockups/article-detail-cisco-anyconnect-vpn.png` |
+| `pages/WorkbenchPage.tsx` | `specs/design/mockups/agent-ticket-queue.png` |
+| `pages/AgentTicketPage.tsx` | `specs/design/mockups/ticket-detail-active.png` (CLOSED state: `specs/design/mockups/ticket-detail-closed-variant.png`) |
+| `pages/KbEditorPage.tsx` | none, follow DESIGN.md and the closest screen |
+| `pages/AdminPoliciesPage.tsx` | `specs/design/mockups/admin-console.png` (shell and table style only) |
+| `pages/AdminDashboardPage.tsx` | none, follow DESIGN.md and the closest screen |
+| `pages/AdminUsersPage.tsx` | none, follow DESIGN.md and the closest screen |
+
+The brand icon is `specs/design/mockups/helpdesk-pro-logo.png`. Use it in the header and on the login page.
+
+### Ignore these parts of the mockups
+
+The spec and this map win. Do not build any of the following:
+
+- Preview-state switchers (Active Queue / Claim Conflict State / Empty State, Validation / Clean / Success, Waiting / Open / Resolved, Simulator State). These show variants only and are not UI.
+- Agent Queue: Bulk Actions, Export CSV, Quick presets, a Team filter, and fixed "<30m" SLA thresholds. Use the SLA rules in the spec (AT_RISK at 80 percent of target elapsed).
+- Ticket detail (agent): "Force Open" and "Force Close" buttons, "Notify requester via email and Slack", the "priority bumped to Critical" text, and the impacted-hardware panel. Escalation sets a flag and moves the queue only.
+- Closed ticket: auto-closure, CSAT, audit retention and hash verification. Only "Closed tickets cannot be changed" and the locked reply box are in scope.
+- New ticket: attachments, affected device, and the 15-character subject rule. The form has title, description, category and priority, with an empty-title check only.
+- Customer ticket: attachments, and "Need faster turnaround".
+- Knowledge Base and article: Import Markdown, Propose Changes, helpful votes, view counts, table of contents, related articles, governance panel, Print/PDF.
+- Admin Console: Routing rules editor, Permissions and Roles tab, Cluster sync, and the "Access denied state" tab. Only SLA policies (list, new version, published versions read-only) is in scope.
+- Login: Remember this device, SSO / Okta button.
+- Pages with no mockup (KbEditorPage, AdminDashboardPage, AdminUsersPage) follow DESIGN.md and the closest screen.
