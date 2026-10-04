@@ -79,6 +79,17 @@ class TicketReplyRecord:
 
 
 @dataclass(frozen=True)
+class SlaPolicyRecord:
+    id: int
+    priority: str
+    version: int
+    response_minutes: int
+    resolution_minutes: int
+    created_by: str
+    published_at: str
+
+
+@dataclass(frozen=True)
 class TicketHistoryRecord:
     id: int
     ticket_id: str
