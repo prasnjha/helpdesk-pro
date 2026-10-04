@@ -17,3 +17,13 @@
 - Gates: backend pytest 144 passed (33 new); ruff, mypy --strict, lint-imports clean; coverage 99% (floor 80%, baseline 99%, unchanged — ratchet held).
 - Features closed: F009, F010, F011, F012, F019, F020 (AC-05, AC-06, AC-10).
 - Verdict: PASS. No self-healing needed.
+
+## Group D (partial) — 2026-10-04
+
+- Mode: solo (generator worked directly, no sprint contract negotiation).
+- Stories implemented this session: E5-S1 (KB publish and CRUD API, AC-09), E6-S5 (CI pipeline).
+- Backend: src/domain/kb.py (tag rules), migration 008_kb.sql (kb_article, kb_article_tag), src/repository/kb_repository.py, src/service/kb_service.py, src/api/routers/kb.py (/api/kb/articles POST/GET/GET-by-id/PUT/DELETE). Config: .github/workflows/ci.yml (backend ruff/mypy/lint-imports/pytest --cov-fail-under=80, frontend eslint/tsc/vitest, e2e Playwright job that no-ops until E6-S3 adds a config).
+- Gates: backend pytest 158 passed (17 new); ruff, mypy --strict, lint-imports clean; coverage 99% (floor 80%, baseline 99%, unchanged). Frontend: 11 vitest tests, lint, typecheck all pass (untouched).
+- Features closed: F017, F018 (AC-09).
+- Not attempted this session: E5-S2 (KB pages UI), E6-S2 (admin console UI), E6-S1 (agent workbench UI), E6-S3 (responsive layout + Playwright suite), E6-S4 (README + seed data), E6-S6 (optional stretch notifications). These remain open for the next iteration of group D.
+- Verdict: PASS for the two stories attempted. Group D as a whole is NOT complete; no self-healing was needed for what was built.

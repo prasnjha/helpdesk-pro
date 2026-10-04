@@ -266,8 +266,8 @@
       "POST /api/kb/articles as agent A-1 with source_ticket_id HD-000030, title, body, and tags",
       "Assert response 201 and source_ticket_id is HD-000030"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -282,8 +282,8 @@
       "As customer C-1, PUT and DELETE an existing article and assert 403 for each",
       "Assert the article table is unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -316,6 +316,53 @@
     ],
     "passes": true,
     "last_evaluated": "2026-10-04T07:18:20Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F021",
+    "category": "functional",
+    "story": "E6-S1",
+    "group": "D",
+    "description": "GET /api/agent/queues/{queue}/tickets returns tickets in that queue with priority, status and escalated filters and live SLA state",
+    "steps": [
+      "As agent1, GET /api/agent/queues/billing/tickets and assert a created Billing ticket is listed with response_state and resolution_state",
+      "Filter by priority, status and escalated and assert each filter narrows the result",
+      "As admin1, GET the same endpoint and assert it also succeeds"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T12:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F022",
+    "category": "security",
+    "story": "E6-S1",
+    "group": "D",
+    "description": "Customer calls to the agent queue endpoint return 403; an unknown queue slug returns 404",
+    "steps": [
+      "As customer1, GET /api/agent/queues/billing/tickets and assert 403 FORBIDDEN",
+      "As agent1, GET /api/agent/queues/not-a-real-queue/tickets and assert 404"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T12:00:00Z",
+    "failure_reason": null,
+    "failure_layer": null
+  },
+  {
+    "id": "F023",
+    "category": "functional",
+    "story": "E6-S2",
+    "group": "D",
+    "description": "GET /api/admin/dashboard returns open_by_queue, breached_by_priority and escalations_in_period for a from/to window, 403 for non-admins, 422 for a bad date range",
+    "steps": [
+      "As admin1, GET /api/admin/dashboard?from=...&to=... and assert open_by_queue includes the Billing queue count",
+      "Force a response breach and an escalation, then assert breached_by_priority and escalations_in_period reflect them within the window",
+      "As agent1, GET the endpoint and assert 403; request from > to and assert 422"
+    ],
+    "passes": true,
+    "last_evaluated": "2026-10-04T12:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   }
