@@ -152,7 +152,7 @@
       },
       {
         "id": "E6S2-policy-history-order-and-dashboard-tables",
-        "description": "E6-S2 AC1/AC2/AC3: saving a new version puts it first in that priority's history table; no priority/version ever shows edit controls; the dashboard renders open_by_queue and breached_by_priority as <table> elements. NOTE: escalations_in_period does NOT render as a table (see failure below) -- this check is PARTIAL.",
+        "description": "E6-S2 AC1/AC2/AC3: saving a new version puts it first in that priority's history table; no priority/version ever shows edit controls; the dashboard renders open_by_queue, breached_by_priority AND escalations_in_period as <table> elements. Originally found PARTIAL (escalations_in_period rendered as a <p>, not a <table>; see docs/fix-loops/05-dashboard-escalations-not-a-table.md). Fixed in commit 5aa9c7e (frontend/src/components/DashboardTables.tsx now renders a one-column escalations-in-period-table) and re-verified live: PASS.",
         "url": "/admin/sla-policies",
         "steps": [
           { "action": "login", "value": "admin1" },
@@ -163,8 +163,8 @@
           { "action": "assert", "assertion": "[data-testid=policy-row-Low] first row shows 20/200" },
           { "action": "assert", "assertion": "no edit/save controls on any [data-testid^=policy-row-]" },
           { "action": "navigate", "value": "/admin/dashboard" },
-          { "action": "assert", "assertion": "[data-testid=open-by-queue-table] and [data-testid=breached-by-priority-table] are <table> elements" },
-          { "action": "assert", "assertion": "FAILS: escalations_in_period is rendered as <p>, not a <table>" }
+          { "action": "assert", "assertion": "[data-testid=open-by-queue-table], [data-testid=breached-by-priority-table] and [data-testid=escalations-in-period-table] are all <table> elements" },
+          { "action": "assert", "assertion": "PASS after fix commit 5aa9c7e -- screenshot frontend/e2e/eval-screens/D-admin-dashboard-fixed.png" }
         ]
       },
       {

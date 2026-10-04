@@ -14,7 +14,14 @@
         "frontend/src/components/DashboardTables.tsx:49",
         "frontend/src/components/DashboardTables.test.tsx"
       ],
-      "prior_attempts": []
+      "prior_attempts": [],
+      "resolution": {
+        "status": "fixed",
+        "fix_commit": "5aa9c7e",
+        "red_commit": "a414186",
+        "summary": "DashboardTables.tsx now renders escalations_in_period as a one-column <table data-testid=\"escalations-in-period-table\"> (header 'Escalations in period', one data row) instead of a <p>. DashboardTables.test.tsx and AdminDashboardPage.test.tsx were tightened to assert a real <table> element and column header instead of a text match, written first as a failing test (red commit a414186) before the fix (green commit 5aa9c7e).",
+        "validated": "Live-verified against the running app (admin1, GET /admin/dashboard) via a temporary Playwright spec (deleted after the run; screenshot kept at frontend/e2e/eval-screens/D-admin-dashboard-fixed.png). Full frontend gate re-run: npm test 61/61 passed, lint clean, typecheck clean, npx playwright test 11 passed/22 skipped/0 failed (no snapshot baselines affected -- the admin dashboard has no committed visual snapshot). Backend pytest, ruff, mypy, lint-imports unaffected (frontend-only change). features.json F027 set back to passes: true."
+      }
     }
   }
 ]

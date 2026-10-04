@@ -421,10 +421,10 @@
       "Save a new High version at 45/360 and assert it appears before the existing v1 row",
       "Assert the dashboard section renders the two required tables plus the escalations count"
     ],
-    "passes": false,
-    "last_evaluated": "2026-10-04T17:24:27Z",
-    "failure_reason": "E6-S2 AC3 requires open_by_queue, breached_by_priority and escalations_in_period to be shown as tables on the admin dashboard. Live verification (GET /admin/dashboard as admin1, screenshot frontend/e2e/eval-screens/D-admin-dashboard.png) shows escalations_in_period rendered as a <p> text line, not a <table>, in frontend/src/components/DashboardTables.tsx. Policy-editor history ordering (first half of F027) is verified correct and live. See docs/fix-loops/05-dashboard-escalations-not-a-table.md.",
-    "failure_layer": "browser"
+    "passes": true,
+    "last_evaluated": "2026-10-04T17:39:00Z",
+    "failure_reason": null,
+    "failure_layer": null
   },
   {
     "id": "F028",

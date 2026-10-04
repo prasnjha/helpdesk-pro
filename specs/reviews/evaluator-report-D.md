@@ -85,6 +85,17 @@ This is a real, reproducible, AC-literal defect, not a sandbox limitation. Per t
 
 This is scoped narrowly: the API (`F023`) returns correct data, two of the three required tables render correctly, and no other Group D feature touches this component.
 
+### Update (2026-10-04, later same day): defect fixed
+
+The user asked for this specific defect to be fixed on the same branch/PR, with TDD. The fix was applied and re-verified:
+
+- **Red:** `frontend/src/components/DashboardTables.test.tsx` was tightened to assert a real `<table>` (role `table`, a `columnheader` named "Escalations in period", a data row) for the third metric instead of matching the `<p>` text; confirmed failing against the unfixed component. Committed as `a414186` (`test: ...`).
+- **Green:** `frontend/src/components/DashboardTables.tsx` now renders `escalations_in_period` as a one-column `<table data-testid="escalations-in-period-table">`, matching the other two tables' pattern and inheriting the same responsive table CSS (`global.css`, scrolls at ≤480px). `frontend/src/pages/AdminDashboardPage.test.tsx`'s same-named-but-not-asserting-a-table test was fixed the same way. Committed as `5aa9c7e` (`fix: ...`).
+- **Re-verified live:** full frontend gate re-run (`npm test` 61/61, `npm run lint` clean, `npm run typecheck` clean, `npx playwright test` 11 passed/22 skipped/0 failed — unchanged, no committed visual snapshot covers the admin dashboard so no baseline needed updating) plus a temporary Playwright spec against the real running app (admin1, `GET`/render `/admin/dashboard`) confirming `escalations-in-period-table` is a genuine `<table>` with the expected header; screenshot `frontend/e2e/eval-screens/D-admin-dashboard-fixed.png`, temporary spec deleted afterward.
+- `features.json`'s `F027` is back to `passes: true`. `sprint-contracts/D.json`'s `E6S2-policy-history-order-and-dashboard-tables` check, `specs/reviews/eval-failures-D.json` (added a `resolution` block), and `docs/fix-loops/05-dashboard-escalations-not-a-table.md` were all updated to record the fix and commit hashes.
+
+**F027 is now PASS, with no outstanding real defects in Group D.**
+
 ## Step 3 — Design scoring (Layer 3, rubric-based, first UI-heavy group)
 
 Scored against `.claude/skills/evaluation/references/scoring-rubric.md` using the screenshots in `frontend/e2e/eval-screens/D-*.png` (login, customer ticket list, agent workbench at `billing-tier-2`, admin SLA policy editor, admin dashboard, KB list) plus the existing committed responsive snapshots at 375px (`frontend/e2e/snapshots/agent-workbench-375.png`, `customer-tickets-375.png`).
@@ -128,18 +139,18 @@ All four scores are at or above `project-manifest.json`'s `design_score_threshol
 - `cd frontend && npm run typecheck` → clean, no output.
 - `cd frontend && npx playwright test` → **11 passed, 22 skipped (by design), 0 failed.**
 
-## Overall verdict: **PASS, with one recorded real defect (F027, narrow scope)**
+## Overall verdict: **PASS — all 15 features confirmed, including F027 after its fix**
 
-14 of 15 features under test (`F017`, `F018`, `F021`-`F026`, `F028`-`F033`) are confirmed live, independently, against a real running app and a real browser: KB publish/CRUD role and status rules, agent queue filters and role/404 gating, the dashboard API, login's role/username field, the customer/agent ticket detail split with in-place claim updates and status-transition gating, the KB search/editor/role-gating UI, the agent workbench's priority filter and BREACHED badge, the responsive layout at all three breakpoints with real Playwright snapshots, the CI pipeline's coherence, the demo seed script (15 tickets, all five lifecycle states, a Billing Tier 2 breach), and CORS.
+All 15 features under test (`F017`, `F018`, `F021`-`F033`) are confirmed live, independently, against a real running app and a real browser: KB publish/CRUD role and status rules, agent queue filters and role/404 gating, the dashboard API, login's role/username field, the customer/agent ticket detail split with in-place claim updates and status-transition gating, the KB search/editor/role-gating UI, the agent workbench's priority filter and BREACHED badge, the responsive layout at all three breakpoints with real Playwright snapshots, the CI pipeline's coherence, the demo seed script (15 tickets, all five lifecycle states, a Billing Tier 2 breach), CORS, and (after the fix described above) the admin dashboard rendering all three required metrics as tables.
 
-`F027` is the one real functional/UI defect found in this group: the admin dashboard's `escalations_in_period` is shown as plain text, not a `<table>`, contradicting E6-S2 AC3's literal wording. It is scoped narrowly (one `<p>` vs. `<table>` in one component), does not affect the underlying data's correctness, and does not cascade into any other feature. No application code was changed to fix it, per the task's rules; it is recorded in `docs/fix-loops/05-dashboard-escalations-not-a-table.md` and `specs/reviews/eval-failures-D.json`, and `features.json`'s `F027` was flipped to `passes: false`.
+`F027` was the one real functional/UI defect found in this group: the admin dashboard's `escalations_in_period` was shown as plain text, not a `<table>`, contradicting E6-S2 AC3's literal wording. It was scoped narrowly (one `<p>` vs. `<table>` in one component), never affected the underlying data's correctness, and never cascaded into any other feature. It was fixed test-first (red `a414186`, green `5aa9c7e`) and re-verified live; see the "Update" subsection above.
 
 All other gates (backend pytest/ruff/mypy/lint-imports, frontend vitest/eslint/tsc/Playwright) are green.
 
 ### features.json updates made
 
 - `F017`, `F018`, `F021`, `F022`, `F023`, `F024`, `F025`, `F026`, `F028`, `F029`, `F030`, `F031`, `F032`, `F033`: `last_evaluated` refreshed to `2026-10-04T17:24:27Z`; `passes` confirmed `true`; `failure_reason`/`failure_layer` confirmed `null`.
-- `F027`: `passes` flipped `true` → `false`; `failure_layer` set to `"browser"`; `failure_reason` set to the dashboard-table gap described above. `last_evaluated` set to `2026-10-04T17:24:27Z`.
+- `F027`: `passes` flipped `true` → `false` → **`true`** after the fix (commit `5aa9c7e`); `failure_layer`/`failure_reason` cleared back to `null`; `last_evaluated` refreshed to `2026-10-04T17:39:00Z`.
 - No other fields (`id`, `title`/`description`, `story`, `group`, `category`) were changed for any feature, and no feature outside Group D's 15 ids was touched.
 
 ## Housekeeping
@@ -147,5 +158,6 @@ All other gates (backend pytest/ruff/mypy/lint-imports, frontend vitest/eslint/t
 - Backend (`uv run uvicorn src.main:app --port 8000`) and frontend (`npm run dev -- --port 5173`) dev servers started for this verification were both stopped after testing.
 - `backend/helpdesk.db` was deleted once at the start of this run for a clean seeded DB (`*.db` is gitignored; this is local dev data, not source code). It now additionally contains the demo seed (15 tickets), two real KB articles created live against the API during Layer 1/2 checks (`HD-000011`/`HD-000013` sources), a new Critical/Low SLA policy version from the live checks, and one duplicate "Eval temp: proration fix" KB article created twice (once via `curl`, once via the temporary Playwright spec) — all disposable test data in a gitignored file, not committed.
 - A temporary evaluator spec, `frontend/e2e/eval-group-d-temp.spec.ts`, and a temporary screenshot-only spec, `frontend/e2e/eval-design-shots-temp.spec.ts`, were written to exercise KB/admin-console/agent-workbench UI flows and capture design-scoring evidence not covered by the committed suite. Both were **deleted** before finishing this evaluation; `git status` at the end of this run shows no untracked or modified files under `frontend/e2e/` other than the pre-existing, committed suite and the `eval-screens/` PNGs (new files: `D-admin-dashboard.png`, `D-admin-policies.png`, `D-agent-workbench.png`, `D-customer-tickets.png`, `D-kb-list.png`, `D-login.png`, added to the existing `eval-screens/` directory alongside Group B's `B-0*.png`, per the task's "reuse that dir" instruction).
+- For the F027 fix re-verification (same day, later): a third temporary spec, `frontend/e2e/eval-group-d-ac3-refix.spec.ts`, was written, run against a freshly migrated+seeded backend/frontend, and **deleted** afterward, leaving one additional evidence screenshot, `frontend/e2e/eval-screens/D-admin-dashboard-fixed.png`.
 - `backend/coverage.xml` shows as modified in `git status` — this is the expected regenerated-snapshot behavior described in `README.md` ("`backend/coverage.xml` is committed as a snapshot of the last test run. Pytest regenerates it...") from running `uv run pytest` during this evaluation, not an unrelated or throwaway change.
 - No application code under `backend/src/` or `frontend/src/` was modified. `docs/fix-loops/05-dashboard-escalations-not-a-table.md` and `specs/reviews/eval-failures-D.json` are new documentation/evidence files, not application code.

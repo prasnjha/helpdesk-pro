@@ -28,11 +28,21 @@ Retroactive Group D evaluator run. API layer (`GET /api/admin/dashboard`) was ve
 
 ## The fix
 
-Not applied. Per the evaluation task's no-code-changes rule, no production code was touched. A real fix would render `escalations_in_period` as a one-row/one-column (or similarly minimal) `<table>` instead of a `<p>`, and update `DashboardTables.test.tsx` to assert on a table element for that metric rather than a text string.
+**Detected:** retroactive Group D evaluator run, live screenshot `frontend/e2e/eval-screens/D-admin-dashboard.png`, as described above.
+
+**Reproduced:** `frontend/src/components/DashboardTables.test.tsx` was tightened to assert a real `<table>` (role `table`, a `columnheader` named "Escalations in period", and a data row) instead of matching the `<p>` text, and confirmed red against the unversioned code (`npx vitest run` failed on `getByTestId("escalations-in-period-table")`). Committed as the red commit `a414186` (`test: assert escalations_in_period renders as a table in DashboardTables`).
+
+**Fixed:** `frontend/src/components/DashboardTables.tsx` now renders `escalations_in_period` as a one-column `<table data-testid="escalations-in-period-table">` (header "Escalations in period", one data row) instead of a `<p>`, matching the pattern already used for `open_by_queue` and `breached_by_priority` and inheriting the same responsive table CSS from `global.css` (scrolls at ≤480px instead of causing page overflow). `AdminDashboardPage.test.tsx`'s same-named-but-not-asserting-a-table test was fixed the same way. Committed as the green commit `5aa9c7e` (`fix: render escalations_in_period as a table in DashboardTables`).
+
+**Validated:**
+- `npx vitest run src/components/DashboardTables.test.tsx src/pages/AdminDashboardPage.test.tsx` — both green.
+- Full frontend gate: `npm test` 61/61 passed, `npm run lint` clean, `npm run typecheck` clean, `npx playwright test` 11 passed / 22 skipped-by-design / 0 failed — unchanged from before the fix, and no committed visual snapshot covers the admin dashboard, so no baseline needed updating.
+- Live re-verification against the running app (migrated + seeded backend on :8000, frontend on :5173) via a temporary Playwright spec (`admin1` login, `GET /admin/dashboard`), confirming `escalations-in-period-table` is a real `<table>` element with the expected column header; screenshot kept at `frontend/e2e/eval-screens/D-admin-dashboard-fixed.png`. The temporary spec file itself was deleted after the run.
+- `sprint-contracts/D.json`'s `E6S2-policy-history-order-and-dashboard-tables` check, `specs/reviews/eval-failures-D.json`, and `specs/reviews/evaluator-report-D.md` were all updated to record the fix and its commit hash. `features.json` F027 is back to `passes: true`.
 
 ## Scope / severity note
 
-This is a narrow UI-literal gap, not a functional defect: the underlying data (`escalations_in_period`) is correct and visible to the admin, just not marked up as a `<table>` element as the AC specifies. `F027` is marked `passes: false` with `failure_layer: "browser"` in `features.json` until this is corrected.
+This was a narrow UI-literal gap, not a functional defect: the underlying data (`escalations_in_period`) was always correct and visible to the admin, just not marked up as a `<table>` element as the AC specifies. Now fixed.
 
 ## The lesson
 
