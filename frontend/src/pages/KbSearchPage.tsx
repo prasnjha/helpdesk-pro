@@ -1,4 +1,4 @@
-// GET /api/kb/articles?q=&tag= — search over title/body, list titles
+// GET /api/kb/articles?q= — search over title/body, list titles
 // (component-map.md, E5-S2 AC-01).
 
 import { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import type { KbArticleSummary } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { getRole } from "../state/session";
 
-export function KbListPage(): JSX.Element {
+export function KbSearchPage(): JSX.Element {
   const [q, setQ] = useState("");
   const [articles, setArticles] = useState<KbArticleSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function KbListPage(): JSX.Element {
       <input id="kb-search" value={q} onChange={(e) => setQ(e.target.value)} />
 
       {/* No editor controls for a customer (E5-S2 AC-03). */}
-      {isStaff && <Link to="/kb/new">New article</Link>}
+      {isStaff && <Link to="/agent/kb/new">New article</Link>}
 
       <ul>
         {articles.map((article) => (

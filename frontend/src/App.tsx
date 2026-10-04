@@ -1,14 +1,17 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { AdminDashboardPage } from "./pages/AdminDashboardPage";
+import { AdminPoliciesPage } from "./pages/AdminPoliciesPage";
+import { AgentTicketPage } from "./pages/AgentTicketPage";
 import { AuthGuard } from "./components/AuthGuard";
-import { AdminConsolePage } from "./pages/AdminConsolePage";
-import { AgentQueuePage } from "./pages/AgentQueuePage";
+import { CustomerTicketPage } from "./pages/CustomerTicketPage";
 import { KbArticlePage } from "./pages/KbArticlePage";
-import { KbListPage } from "./pages/KbListPage";
+import { KbEditorPage } from "./pages/KbEditorPage";
+import { KbSearchPage } from "./pages/KbSearchPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyTicketsPage } from "./pages/MyTicketsPage";
 import { NewTicketPage } from "./pages/NewTicketPage";
-import { TicketDetailPage } from "./pages/TicketDetailPage";
+import { WorkbenchPage } from "./pages/WorkbenchPage";
 
 export function App(): JSX.Element {
   return (
@@ -33,24 +36,40 @@ export function App(): JSX.Element {
       <Route
         path="/tickets/:id"
         element={
-          <AuthGuard allow={["customer", "agent", "admin"]}>
-            <TicketDetailPage />
+          <AuthGuard allow={["customer"]}>
+            <CustomerTicketPage />
           </AuthGuard>
         }
       />
       <Route
-        path="/agent/queues"
+        path="/agent/queues/:queue"
         element={
           <AuthGuard allow={["agent", "admin"]}>
-            <AgentQueuePage />
+            <WorkbenchPage />
           </AuthGuard>
         }
       />
       <Route
-        path="/admin"
+        path="/agent/tickets/:id"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <AgentTicketPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/admin/sla-policies"
         element={
           <AuthGuard allow={["admin"]}>
-            <AdminConsolePage />
+            <AdminPoliciesPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AuthGuard allow={["admin"]}>
+            <AdminDashboardPage />
           </AuthGuard>
         }
       />
@@ -58,7 +77,7 @@ export function App(): JSX.Element {
         path="/kb"
         element={
           <AuthGuard allow={["customer", "agent", "admin"]}>
-            <KbListPage />
+            <KbSearchPage />
           </AuthGuard>
         }
       />
@@ -67,6 +86,22 @@ export function App(): JSX.Element {
         element={
           <AuthGuard allow={["customer", "agent", "admin"]}>
             <KbArticlePage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/agent/kb/new"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <KbEditorPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/agent/kb/:id/edit"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <KbEditorPage />
           </AuthGuard>
         }
       />

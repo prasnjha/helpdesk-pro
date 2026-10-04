@@ -28,13 +28,13 @@ test("E2S4_customer_login_lands_on_my_tickets", async ({ page }) => {
 
 test("E2S4_agent_login_lands_on_agent_workbench", async ({ page }) => {
   await login(page, "agent1");
-  await expect(page).toHaveURL(/\/agent\/queues$/);
+  await expect(page).toHaveURL(/\/agent\/queues\/billing$/);
   await expect(page.getByRole("heading", { name: "Agent workbench" })).toBeVisible();
 });
 
 test("E2S4_admin_login_lands_on_admin_console", async ({ page }) => {
   await login(page, "admin1");
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/admin\/sla-policies$/);
 });
 
 test.describe("ticket lifecycle", () => {
@@ -78,11 +78,11 @@ test.describe("ticket lifecycle", () => {
     const second = await browser.newPage();
 
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
     await expect(page.getByTestId("ticket-status")).toContainText("IN_PROGRESS");
 
     await login(second, "agent2");
-    await second.goto(`/tickets/${ticketId}`);
+    await second.goto(`/agent/tickets/${ticketId}`);
     await expect(second.getByTestId("ticket-status")).toContainText("IN_PROGRESS");
 
     await page.getByLabel("Change status").selectOption("PENDING_CUSTOMER");
@@ -108,13 +108,13 @@ test.describe("ticket lifecycle", () => {
     await expect(page.getByText("Here is the requested diagnostic log.")).toBeVisible();
 
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
     await expect(page.getByTestId("ticket-status")).toContainText("OPEN");
   });
 
   test("E6S1_closed_ticket_is_read_only", async ({ page }) => {
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
 
     // Customer's reply put the ticket back to OPEN; drive it to CLOSED.
     await expect(page.getByTestId("ticket-status")).toContainText("OPEN");

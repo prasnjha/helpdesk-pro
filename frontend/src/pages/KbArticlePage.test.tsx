@@ -9,6 +9,16 @@ function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200 });
 }
 
+const article = {
+  id: 5,
+  title: "Reset password",
+  body: "Steps...",
+  tags: ["password"],
+  source_ticket_id: "HD-000001",
+  created_by: "AG-1",
+  updated_at: "x",
+};
+
 function renderAt(path: string): void {
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -29,44 +39,19 @@ describe("KbArticlePage", () => {
     clearSession();
   });
 
-  it("E5S2_agent_saves_an_article_with_tags_and_the_saved_article_shows_them", async () => {
-    setSession("tok", "agent", "agent1");
-    const created = {
-      id: 5,
-      title: "Reset password",
-      body: "Steps...",
-      tags: ["password", "login"],
-      source_ticket_id: "HD-000001",
-      created_by: "AG-1",
-      updated_at: "x",
-    };
-    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(created));
+  it("E5S2_renders_the_article_title_body_and_tags", async () => {
+    setSession("tok", "customer", "customer1");
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(article));
 
-    renderAt("/kb/new?source_ticket_id=HD-000001");
+    renderAt("/kb/5");
 
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Reset password" } });
-    fireEvent.change(screen.getByLabelText("Body"), { target: { value: "Steps..." } });
-    fireEvent.change(screen.getByLabelText("Tags (comma separated)"), {
-      target: { value: "password, login" },
-    });
-
-    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(created)); // GET after navigate to /kb/5
-    fireEvent.click(screen.getByText("Save"));
-
-    await waitFor(() => expect(screen.getByTestId("article-tags")).toHaveTextContent("password, login"));
+    await waitFor(() => expect(screen.getByText("Reset password")).toBeInTheDocument());
+    expect(screen.getByText("Steps...")).toBeInTheDocument();
+    expect(screen.getByTestId("article-tags")).toHaveTextContent("password");
   });
 
   it("E5S2_customer_viewing_an_article_sees_no_editor_controls", async () => {
     setSession("tok", "customer", "customer1");
-    const article = {
-      id: 5,
-      title: "Reset password",
-      body: "Steps...",
-      tags: ["password"],
-      source_ticket_id: "HD-000001",
-      created_by: "AG-1",
-      updated_at: "x",
-    };
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(article));
 
     renderAt("/kb/5");
@@ -74,5 +59,35 @@ describe("KbArticlePage", () => {
     await waitFor(() => expect(screen.getByText("Reset password")).toBeInTheDocument());
     expect(screen.queryByText("Edit")).not.toBeInTheDocument();
     expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+  });
+
+  it("E5S2_staff_sees_edit_and_delete_linking_to_the_kb_editor", async () => {
+    setSession("tok", "agent", "agent1");
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(article));
+
+    renderAt("/kb/5");
+
+    await waitFor(() => expect(screen.getByText("Reset password")).toBeInTheDocument());
+    expect(screen.getByRole("link", { name: "Edit" })).toHaveAttribute(
+      "href",
+      "/agent/kb/5/edit"
+    );
+  });
+
+  it("E5S2_staff_delete_calls_the_delete_endpoint", async () => {
+    setSession("tok", "agent", "agent1");
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse(article))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    renderAt("/kb/5");
+
+    await waitFor(() => expect(screen.getByText("Reset password")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("Delete"));
+
+    await waitFor(() => {
+      const deleteCall = vi.mocked(fetch).mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === "DELETE");
+      expect(deleteCall).toBeDefined();
+    });
   });
 });

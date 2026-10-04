@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { clearSession, setSession } from "../state/session";
-import { TicketDetailPage } from "./TicketDetailPage";
+import { AgentTicketPage } from "./AgentTicketPage";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status });
@@ -36,17 +36,18 @@ const slaSnapshot = {
 
 function renderPage(): void {
   render(
-    <MemoryRouter initialEntries={["/tickets/HD-000001"]}>
+    <MemoryRouter initialEntries={["/agent/tickets/HD-000001"]}>
       <Routes>
-        <Route path="/tickets/:id" element={<TicketDetailPage />} />
+        <Route path="/agent/tickets/:id" element={<AgentTicketPage />} />
       </Routes>
     </MemoryRouter>
   );
 }
 
-describe("TicketDetailPage", () => {
+describe("AgentTicketPage", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
+    setSession("tok", "agent", "agent1");
   });
 
   afterEach(() => {
@@ -54,24 +55,7 @@ describe("TicketDetailPage", () => {
     clearSession();
   });
 
-  it("E6S3_customer_sees_a_reply_box_but_no_notes_history_or_actions", async () => {
-    setSession("tok", "customer", "customer1");
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(jsonResponse(baseTicket))
-      .mockResolvedValueOnce(jsonResponse(slaSnapshot));
-
-    renderPage();
-
-    await waitFor(() => expect(screen.getByText("Invoice issue")).toBeInTheDocument());
-
-    expect(screen.getByLabelText("Reply box")).toBeInTheDocument();
-    expect(screen.queryByText("Internal notes")).not.toBeInTheDocument();
-    expect(screen.queryByText("History")).not.toBeInTheDocument();
-    expect(screen.queryByText("Actions")).not.toBeInTheDocument();
-  });
-
   it("E6S1_agent_claim_updates_assignee_without_a_page_reload", async () => {
-    setSession("tok", "agent", "agent1");
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse(baseTicket))
       .mockResolvedValueOnce(jsonResponse(slaSnapshot))
@@ -93,7 +77,6 @@ describe("TicketDetailPage", () => {
   });
 
   it("E6S1_status_control_only_offers_the_valid_next_states_for_in_progress", async () => {
-    setSession("tok", "agent", "agent1");
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "IN_PROGRESS" }))
       .mockResolvedValueOnce(jsonResponse(slaSnapshot));
@@ -108,7 +91,6 @@ describe("TicketDetailPage", () => {
   });
 
   it("E6S1_invalid_status_change_surfaces_the_409_message_through_error_banner", async () => {
-    setSession("tok", "agent", "agent1");
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "OPEN" }))
       .mockResolvedValueOnce(jsonResponse(slaSnapshot))
@@ -127,7 +109,6 @@ describe("TicketDetailPage", () => {
   });
 
   it("E6S1_closed_ticket_is_read_only_for_agents", async () => {
-    setSession("tok", "agent", "agent1");
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "CLOSED" }))
       .mockResolvedValueOnce(jsonResponse(slaSnapshot));
@@ -140,5 +121,36 @@ describe("TicketDetailPage", () => {
     expect(screen.queryByText("Claim")).not.toBeInTheDocument();
     expect(screen.queryByText("Update status")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Reply box")).not.toBeInTheDocument();
+  });
+
+  it("E6S1_shows_internal_notes_and_history_for_staff", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          ...baseTicket,
+          notes: [{ id: 1, ticket_id: "HD-000001", author_id: "agent1", body: "checked billing", created_at: "x" }],
+          history: [{ id: 1, ticket_id: "HD-000001", event: "CREATED", from_state: null, to_state: "OPEN", actor_id: "C-1", correlation_id: null, created_at: "x" }],
+        })
+      )
+      .mockResolvedValueOnce(jsonResponse(slaSnapshot));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("checked billing")).toBeInTheDocument());
+    expect(screen.getByText("History")).toBeInTheDocument();
+  });
+
+  it("E5S2_publish_to_kb_link_is_visible_once_resolved", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(jsonResponse({ ...baseTicket, status: "RESOLVED" }))
+      .mockResolvedValueOnce(jsonResponse(slaSnapshot));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByTestId("ticket-status")).toHaveTextContent("RESOLVED"));
+    expect(screen.getByRole("link", { name: "Publish to knowledge base" })).toHaveAttribute(
+      "href",
+      "/agent/kb/new?source_ticket_id=HD-000001"
+    );
   });
 });

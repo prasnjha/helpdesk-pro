@@ -1,8 +1,8 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AgentQueuePage } from "./AgentQueuePage";
+import { WorkbenchPage } from "./WorkbenchPage";
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200 });
@@ -33,7 +33,17 @@ const tickets = [
   },
 ];
 
-describe("AgentQueuePage", () => {
+function renderPage(path = "/agent/queues/billing"): void {
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="/agent/queues/:queue" element={<WorkbenchPage />} />
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
+describe("WorkbenchPage", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -45,11 +55,7 @@ describe("AgentQueuePage", () => {
   it("E6S1_lists_tickets_for_the_selected_queue_and_shows_breached_state", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(tickets));
 
-    render(
-      <MemoryRouter>
-        <AgentQueuePage />
-      </MemoryRouter>
-    );
+    renderPage();
 
     await waitFor(() => expect(screen.getAllByTestId("queue-row")).toHaveLength(2));
     const states = screen.getAllByTestId("queue-row-sla-state").map((el) => el.textContent);
@@ -61,11 +67,7 @@ describe("AgentQueuePage", () => {
       .mockResolvedValueOnce(jsonResponse(tickets))
       .mockResolvedValueOnce(jsonResponse([tickets[0]]));
 
-    render(
-      <MemoryRouter>
-        <AgentQueuePage />
-      </MemoryRouter>
-    );
+    renderPage();
 
     await waitFor(() => expect(screen.getAllByTestId("queue-row")).toHaveLength(2));
 
@@ -74,5 +76,15 @@ describe("AgentQueuePage", () => {
     await waitFor(() => expect(screen.getAllByTestId("queue-row")).toHaveLength(1));
     const [lastUrl] = vi.mocked(fetch).mock.calls[vi.mocked(fetch).mock.calls.length - 1];
     expect(String(lastUrl)).toContain("priority=Critical");
+  });
+
+  it("E6S1_the_queue_route_param_selects_the_initial_queue", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(tickets));
+
+    renderPage("/agent/queues/technical");
+
+    await waitFor(() => expect(screen.getByLabelText("Queue")).toHaveValue("technical"));
+    const [firstUrl] = vi.mocked(fetch).mock.calls[0];
+    expect(String(firstUrl)).toContain("/api/agent/queues/technical/tickets");
   });
 });

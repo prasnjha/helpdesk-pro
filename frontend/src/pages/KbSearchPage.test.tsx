@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { clearSession, setSession } from "../state/session";
-import { KbListPage } from "./KbListPage";
+import { KbSearchPage } from "./KbSearchPage";
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200 });
@@ -11,7 +11,7 @@ function jsonResponse(body: unknown): Response {
 
 const articles = [{ id: 1, title: "Reset your password", tags: ["password"], updated_at: "x" }];
 
-describe("KbListPage", () => {
+describe("KbSearchPage", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -29,7 +29,7 @@ describe("KbListPage", () => {
 
     render(
       <MemoryRouter>
-        <KbListPage />
+        <KbSearchPage />
       </MemoryRouter>
     );
 
@@ -46,7 +46,7 @@ describe("KbListPage", () => {
 
     render(
       <MemoryRouter>
-        <KbListPage />
+        <KbSearchPage />
       </MemoryRouter>
     );
 
@@ -54,16 +54,20 @@ describe("KbListPage", () => {
     expect(screen.queryByText("New article")).not.toBeInTheDocument();
   });
 
-  it("E5S2_agent_sees_a_new_article_link", async () => {
+  it("E5S2_agent_sees_a_new_article_link_to_the_kb_editor", async () => {
     setSession("tok", "agent", "agent1");
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(articles));
 
     render(
       <MemoryRouter>
-        <KbListPage />
+        <KbSearchPage />
       </MemoryRouter>
     );
 
     await waitFor(() => expect(screen.getByText("New article")).toBeInTheDocument());
+    expect(screen.getByRole("link", { name: "New article" })).toHaveAttribute(
+      "href",
+      "/agent/kb/new"
+    );
   });
 });
