@@ -312,3 +312,74 @@ next_action: With E6-S6 intentionally dropped, Group D's required scope is other
   it is green; (b) optionally implement DESIGN.md's visual tokens as real CSS — current
   styling is layout-only, functional but not visually polished to the mockups; (c) decide
   whether to pick up E6-S6 (notifications) as a true stretch addition.
+
+## Session 8 — CORS, StatusControl/CLOSED fix, DESIGN.md tokens, e2e green
+
+The prior session's /auto run left several gaps found during review of its squashed
+commit `4ac2474` (see "Known deviations" below). This session, working directly (not
+via /auto), closed the ones blocking a real end-to-end run and corrected two UI defects,
+each test-first in its own commit:
+
+1. StatusControl bug: TicketDetailPage previously offered all five ticket statuses in the
+   "Change status" select regardless of the ticket's current state, letting an agent pick
+   an edge the backend would reject. Added VALID_NEXT_STATES (ticket-lifecycle_spec.md
+   Section 2) so only the current state's valid next states are offered, and added the
+   missing CLOSED read-only view ("Closed tickets cannot be changed.", action controls
+   hidden) that the sprint instructions explicitly required.
+2. DESIGN.md tokens: previously unapplied (global.css said so explicitly). Added them as
+   real CSS variables (colour, spacing, radius) with a minimal baseline for buttons/
+   inputs/headings, plus a new shared Header component carrying the logo (copied from
+   specs/design/mockups/helpdesk-pro-logo.png into frontend/public/) on the login page and
+   the three customer pages, per frontend/CLAUDE.md. Behaviour unchanged.
+3. BLOCKING BUG found and fixed (with explicit user approval first, since it's a backend
+   change outside the seed-only allowance): the backend had no CORS middleware at all, so
+   any real browser's cross-origin request from :5173 to :8000 failed at the OPTIONS
+   preflight stage (405) — the app was unusable from a real browser, not just in e2e.
+   Added Settings.cors_allowed_origins (env CORS_ALLOWED_ORIGINS, default
+   http://localhost:5173 and http://127.0.0.1:5173, no wildcard) in the config layer, and
+   wired FastAPI's CORSMiddleware in create_app. ruff/mypy --strict/lint-imports clean,
+   pytest 177 passed, coverage 99%. Documented in README under a new "Configuration"
+   section.
+4. E6-S3/E6-S5 Playwright GAP from Session 7 is now closed: pointed playwright.config.ts
+   at the Chromium preinstalled under /opt/pw-browsers (present in this sandbox; falls
+   back to Playwright's own browsers when that path doesn't exist, e.g. in CI), and added
+   webServer entries that boot the backend (via e2e/start-backend-with-seed.sh — migrates,
+   waits healthy, seeds demo tickets, stays up) and the frontend dev server. Wrote
+   e2e/functional.spec.ts: login per role, create a ticket, agent claim, a valid status
+   change plus an invalid one via a genuine version conflict (two agents, stale version,
+   409 shown through ErrorBanner), a customer reply on PENDING_CUSTOMER, and closed-ticket
+   read-only — each named with its story/AC id. Full suite now passes: 11 passed, 22
+   correctly skipped (functional flows gated to run once on desktop-1280; each responsive
+   check only applies at its own breakpoint). Snapshots moved from the gitignored
+   test-results/ into frontend/e2e/snapshots/ (committed) per the sprint's requirement.
+   features.json F029 flipped to passes: true. Simplified the .gitlab-ci.yml frontend:e2e
+   job to let playwright.config.ts's webServer own starting both services instead of
+   duplicating that in CI script steps (avoids a port-binding race between the two).
+
+## Known deviations from component-map.md (not fixed this session, by design)
+
+The prior /auto session squashed all of Group D's frontend work into one commit
+(`4ac2474`), which violates the sprint's mandatory small, test-before-feat, never-squashed
+commit discipline. That history is already pushed; per the no-rewrite-pushed-history rule
+it was left as-is rather than unwound, and is called out in the PR description instead.
+
+That same commit also deviates from component-map.md's naming:
+- Pages: `AgentQueuePage` (map: `WorkbenchPage`), `TicketDetailPage` shared by customer/
+  agent/admin (map: separate `CustomerTicketPage` and `AgentTicketPage`), `AdminConsolePage`
+  combining the policy editor and dashboard (map: separate `AdminPoliciesPage` and
+  `AdminDashboardPage`), `KbListPage` (map: `KbSearchPage`). There is no separate
+  `KbEditorPage` file — `KbArticlePage` handles `id === "new"` as an inline editor instead.
+- Components: the map's SlaBadge, ThreadPanel, ReplyBox, ClaimReassignPanel,
+  StatusControl, QueueFilters, TicketTable, PolicyEditor, PolicyHistoryTable and
+  DashboardTables were inlined into their page files rather than extracted as separate
+  components.
+
+Functionally these are mostly equivalent to the map's intent (role gating, SLA display,
+claim/reassign/status/notes/replies, publish-to-KB, policy versioning/history, dashboard
+tables are all present), but the file/page structure does not match the map. Per explicit
+instruction this session did not rename pages or extract components — that is scoped as a
+separate refactor session.
+
+next_action: Group D's required scope (items 1-7) is built and passing. A follow-up
+session should do the component-map naming/extraction refactor called out above, and
+could pick up E6-S6 (notifications) as a true stretch addition if wanted.
