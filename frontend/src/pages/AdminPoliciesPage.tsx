@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { ApiError, apiRequest } from "../api/client";
 import type { Priority, SlaPolicyVersion } from "../api/types";
+import { AdminPageHeading } from "../components/AdminPageHeading";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { PolicyEditor } from "../components/PolicyEditor";
 import { PolicyHistoryTable } from "../components/PolicyHistoryTable";
@@ -57,25 +58,31 @@ export function AdminPoliciesPage(): JSX.Element {
 
   return (
     <main>
-      <h1>Admin console</h1>
+      <AdminPageHeading lead="SLA policies per priority. Saving publishes a new version; published versions are read-only." />
       <ErrorBanner message={error} />
 
-      <section aria-label="SLA policy editor">
-        <h2>SLA policy editor</h2>
-        <PolicyEditor
-          priority={priority}
-          priorities={PRIORITIES}
-          onPriorityChange={setPriority}
-          responseMinutes={responseMinutes}
-          onResponseMinutesChange={setResponseMinutes}
-          resolutionMinutes={resolutionMinutes}
-          onResolutionMinutesChange={setResolutionMinutes}
-          onSubmit={handleSavePolicy}
-        />
+      <section aria-label="SLA policy editor" className="admin-section">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">SLA policy editor</h2>
+          </div>
+          <PolicyEditor
+            priority={priority}
+            priorities={PRIORITIES}
+            onPriorityChange={setPriority}
+            responseMinutes={responseMinutes}
+            onResponseMinutesChange={setResponseMinutes}
+            resolutionMinutes={resolutionMinutes}
+            onResolutionMinutesChange={setResolutionMinutes}
+            onSubmit={handleSavePolicy}
+          />
+        </div>
 
-        {versionsByPriority.map(({ priority: p, rows }) => (
-          <PolicyHistoryTable key={p} priority={p} rows={rows} />
-        ))}
+        <div className="policy-grid">
+          {versionsByPriority.map(({ priority: p, rows }) => (
+            <PolicyHistoryTable key={p} priority={p} rows={rows} />
+          ))}
+        </div>
       </section>
     </main>
   );

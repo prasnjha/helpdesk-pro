@@ -1,10 +1,12 @@
 // Operational dashboard: open_by_queue, breached_by_priority and
-// escalations_in_period (component-map.md, E6-S2 AC-10's UI).
+// escalations_in_period (component-map.md, E6-S2 AC-10's UI). No mockup:
+// styled after admin-console.png's shell and table cards.
 
 import { useEffect, useState } from "react";
 
 import { ApiError, apiRequest } from "../api/client";
 import type { DashboardReport } from "../api/types";
+import { AdminPageHeading } from "../components/AdminPageHeading";
 import { DashboardTables } from "../components/DashboardTables";
 import { ErrorBanner } from "../components/ErrorBanner";
 
@@ -33,18 +35,28 @@ export function AdminDashboardPage(): JSX.Element {
 
   return (
     <main>
-      <h1>Admin console</h1>
+      <AdminPageHeading lead="Open, breached and escalated tickets for a reporting period." />
       <ErrorBanner message={error} />
 
-      <section aria-label="Dashboard">
-        <h2>Dashboard</h2>
-        <label htmlFor="dashboard-from">From</label>
-        <input id="dashboard-from" value={from} onChange={(e) => setFrom(e.target.value)} />
-        <label htmlFor="dashboard-to">To</label>
-        <input id="dashboard-to" value={to} onChange={(e) => setTo(e.target.value)} />
-        <button type="button" onClick={loadDashboard}>
-          Refresh
-        </button>
+      <section aria-label="Dashboard" className="admin-section">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Dashboard</h2>
+          </div>
+          <div className="inline-form dashboard-period">
+            <div className="field">
+              <label htmlFor="dashboard-from">From</label>
+              <input id="dashboard-from" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="dashboard-to">To</label>
+              <input id="dashboard-to" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
+            <button type="button" onClick={loadDashboard}>
+              Refresh
+            </button>
+          </div>
+        </div>
 
         {dashboard && <DashboardTables dashboard={dashboard} />}
       </section>

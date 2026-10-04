@@ -172,14 +172,15 @@ table {
     border: none;
   }
 
-  .ticket-table .cell-id {
+  .ticket-table .ticket-row td.cell-id {
     grid-column: 1 / -1;
   }
 
-  .ticket-table .cell-title {
+  .ticket-table .ticket-row td.cell-title {
     grid-column: 1 / -1;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    text-align: left;
     width: auto;
     max-width: none;
     min-width: 0;

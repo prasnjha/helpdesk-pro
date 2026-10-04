@@ -1,1 +1,228 @@
-/* Page-level layouts (one block per page, mapped in component-map.md). */
+/* Page-level layouts (page -> mockup mapping in component-map.md). Ticket
+   detail layouts live in detail.css. */
+
+/* ---- Shared page furniture --------------------------------------------- */
+
+main.page-narrow {
+  max-width: 880px;
+}
+
+main.page-wide {
+  max-width: 1440px;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.page-title-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.page-lead {
+  max-width: 64ch;
+  font: var(--text-body-lg);
+  color: var(--color-text-muted);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font: var(--text-label-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.empty-state {
+  align-items: center;
+  padding: var(--space-2xl);
+  text-align: center;
+  font: var(--text-body-lg);
+  color: var(--color-text-muted);
+}
+
+.muted-text,
+.table-empty {
+  color: var(--color-text-muted);
+}
+
+.table-empty {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.icon-flip {
+  transform: scaleX(-1);
+}
+
+.textarea-tall {
+  min-height: 240px;
+}
+
+/* The page CTA duplicates the sidebar's "New ticket" link, so it only shows
+   while the sidebar is collapsed into the drawer. */
+@media (min-width: 1024px) {
+  .page-header-cta-mobile {
+    display: none;
+  }
+}
+
+/* ---- My tickets (my-tickets.png) --------------------------------------- */
+
+.ticket-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  list-style: none;
+}
+
+.ticket-card {
+  position: relative;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-2xl) var(--space-lg) var(--space-xl);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ticket-card:hover {
+  box-shadow: var(--shadow-2);
+}
+
+.ticket-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-md);
+}
+
+/* Stretch the id link over the whole card so the card is one click target. */
+.ticket-card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+}
+
+.ticket-card-link:focus-visible {
+  box-shadow: none;
+}
+
+.ticket-card-link:focus-visible::after {
+  box-shadow: var(--focus-ring-button);
+}
+
+.ticket-card-title {
+  font: var(--text-headline-sm);
+  color: var(--color-secondary);
+}
+
+.ticket-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.ticket-card-chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--space-md);
+  color: var(--color-text-muted);
+  transform: translateY(-50%);
+}
+
+/* ---- New ticket (new-ticket.png) --------------------------------------- */
+
+.confirmation-card {
+  align-items: center;
+  padding: var(--space-2xl);
+  text-align: center;
+}
+
+.confirmation-icon {
+  display: inline-flex;
+  padding: var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.confirmation-text {
+  font: var(--text-body-lg);
+}
+
+/* ---- Agent workbench (agent-ticket-queue.png) -------------------------- */
+
+.workbench-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--gutter-lg);
+}
+
+.workbench-filters {
+  gap: var(--space-lg);
+}
+
+@media (max-width: 1023px) {
+  .workbench-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--gutter);
+  }
+
+  .workbench-filters .filter-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--gutter);
+  }
+}
+
+/* ---- Admin (admin-console.png) ----------------------------------------- */
+
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter-lg);
+}
+
+.policy-grid,
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: var(--gutter-lg);
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  align-items: start;
+}
+
+.dashboard-period .field {
+  flex: 0 1 200px;
+}
+
+@media (max-width: 767px) {
+  .ticket-card {
+    padding: var(--space-lg) var(--space-2xl) var(--space-lg) var(--space-lg);
+  }
+
+  .page-lead {
+    font: var(--text-body-md);
+  }
+}

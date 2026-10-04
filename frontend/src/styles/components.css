@@ -1,5 +1,5 @@
-/* Buttons, inputs, forms, cards and banners (DESIGN.md Section 5). Chips
-   live in chips.css, tables in tables.css, the thread in thread.css. */
+/* Buttons, inputs, forms, cards and banners (DESIGN.md Section 5). Inputs and
+   forms live in forms.css, chips in chips.css, tables in tables.css, the thread in thread.css. */
 
 /* ---- Buttons (5.1) ----------------------------------------------------- */
 
@@ -87,133 +87,6 @@ button.btn-icon:active {
   gap: var(--space-sm);
   align-self: flex-start;
   font: var(--text-label-lg);
-}
-
-/* ---- Inputs (5.2) ------------------------------------------------------ */
-
-input,
-select,
-textarea {
-  height: 40px;
-  padding: 0 var(--space-md);
-  border-radius: var(--radius-default);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-card);
-  color: var(--color-text-strong);
-  font: var(--text-body-md);
-}
-
-textarea {
-  height: auto;
-  min-height: 112px;
-  padding: var(--space-md);
-  resize: vertical;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: var(--color-text-muted);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: var(--focus-ring-input);
-}
-
-input[readonly] {
-  background: var(--color-canvas);
-  color: var(--color-text-muted);
-}
-
-input[aria-invalid="true"] {
-  border-color: var(--color-critical);
-  box-shadow: var(--focus-ring-error);
-}
-
-label {
-  font: var(--text-label-lg);
-  color: var(--color-text-strong);
-}
-
-/* ---- Forms ------------------------------------------------------------- */
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  max-width: 100%;
-}
-
-form.ticket-form {
-  gap: var(--space-lg);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-}
-
-.field-error {
-  font: var(--text-body-sm);
-  color: var(--color-critical);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--gutter);
-}
-
-.form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-}
-
-.inline-form {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.inline-form .field {
-  flex: 1 1 180px;
-}
-
-.policy-form {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  align-items: end;
-  gap: var(--gutter);
-}
-
-.filter-fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-}
-
-@media (max-width: 767px) {
-  .policy-form {
-    grid-template-columns: 1fr;
-  }
-
-  .form-actions > button,
-  .form-actions > .btn {
-    flex: 1;
-  }
 }
 
 /* ---- Avatar ------------------------------------------------------------ */
@@ -328,6 +201,10 @@ form.ticket-form {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.banner-body strong {
+  font-weight: 600;
 }
 
 .banner-body p {

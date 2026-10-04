@@ -18,17 +18,32 @@ interface ThreadPanelProps {
   replyBox?: ReactNode;
 }
 
-function initial(value: string): string {
-  return value.slice(0, 1).toUpperCase();
+interface MessageProps {
+  variant: string;
+  avatar: string;
+  author: ReactNode;
+  createdAt: string;
+  body: string;
 }
 
-export function ThreadPanel({
-  replies,
-  notes,
-  showNotes,
-  noteForm,
-  replyBox,
-}: ThreadPanelProps): JSX.Element {
+function Message({ variant, avatar, author, createdAt, body }: MessageProps): JSX.Element {
+  return (
+    <li className={`message message-${variant}`}>
+      <span className="avatar" aria-hidden="true">
+        {avatar.slice(0, 1).toUpperCase()}
+      </span>
+      <div className="message-bubble">
+        <div className="message-meta">
+          {author}
+          <time dateTime={createdAt}>{formatDateTime(createdAt)}</time>
+        </div>
+        <p className="message-text">{body}</p>
+      </div>
+    </li>
+  );
+}
+
+export function ThreadPanel({ replies, notes, showNotes, noteForm, replyBox }: ThreadPanelProps): JSX.Element {
   return (
     <>
       <section aria-label="Replies" className="card thread">
@@ -38,18 +53,14 @@ export function ThreadPanel({
         </div>
         <ul className="message-list">
           {replies.map((reply) => (
-            <li key={reply.id} className={`message message-${reply.author_role}`}>
-              <span className="avatar" aria-hidden="true">
-                {initial(reply.author_role)}
-              </span>
-              <div className="message-bubble">
-                <div className="message-meta">
-                  <strong>{reply.author_role}:</strong>
-                  <time dateTime={reply.created_at}>{formatDateTime(reply.created_at)}</time>
-                </div>
-                <p className="message-text">{reply.body}</p>
-              </div>
-            </li>
+            <Message
+              key={reply.id}
+              variant={reply.author_role}
+              avatar={reply.author_role}
+              author={<strong>{reply.author_role}:</strong>}
+              createdAt={reply.created_at}
+              body={reply.body}
+            />
           ))}
         </ul>
         {replyBox}
@@ -66,18 +77,14 @@ export function ThreadPanel({
           </div>
           <ul className="message-list">
             {notes.map((note) => (
-              <li key={note.id} className="message message-note">
-                <span className="avatar" aria-hidden="true">
-                  {initial(note.author_id)}
-                </span>
-                <div className="message-bubble">
-                  <div className="message-meta">
-                    <span className="message-author">{note.author_id}</span>
-                    <time dateTime={note.created_at}>{formatDateTime(note.created_at)}</time>
-                  </div>
-                  <p className="message-text">{note.body}</p>
-                </div>
-              </li>
+              <Message
+                key={note.id}
+                variant="note"
+                avatar={note.author_id}
+                author={<span className="message-author">{note.author_id}</span>}
+                createdAt={note.created_at}
+                body={note.body}
+              />
             ))}
           </ul>
           {noteForm}
