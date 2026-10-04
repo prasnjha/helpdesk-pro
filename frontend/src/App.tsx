@@ -1,13 +1,14 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { AgentTicketPage } from "./pages/AgentTicketPage";
 import { AuthGuard } from "./components/AuthGuard";
 import { AdminConsolePage } from "./pages/AdminConsolePage";
+import { CustomerTicketPage } from "./pages/CustomerTicketPage";
 import { KbArticlePage } from "./pages/KbArticlePage";
 import { KbListPage } from "./pages/KbListPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyTicketsPage } from "./pages/MyTicketsPage";
 import { NewTicketPage } from "./pages/NewTicketPage";
-import { TicketDetailPage } from "./pages/TicketDetailPage";
 import { WorkbenchPage } from "./pages/WorkbenchPage";
 
 export function App(): JSX.Element {
@@ -33,8 +34,8 @@ export function App(): JSX.Element {
       <Route
         path="/tickets/:id"
         element={
-          <AuthGuard allow={["customer", "agent", "admin"]}>
-            <TicketDetailPage />
+          <AuthGuard allow={["customer"]}>
+            <CustomerTicketPage />
           </AuthGuard>
         }
       />
@@ -43,6 +44,14 @@ export function App(): JSX.Element {
         element={
           <AuthGuard allow={["agent", "admin"]}>
             <WorkbenchPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/agent/tickets/:id"
+        element={
+          <AuthGuard allow={["agent", "admin"]}>
+            <AgentTicketPage />
           </AuthGuard>
         }
       />

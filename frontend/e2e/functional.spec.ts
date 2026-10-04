@@ -78,11 +78,11 @@ test.describe("ticket lifecycle", () => {
     const second = await browser.newPage();
 
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
     await expect(page.getByTestId("ticket-status")).toContainText("IN_PROGRESS");
 
     await login(second, "agent2");
-    await second.goto(`/tickets/${ticketId}`);
+    await second.goto(`/agent/tickets/${ticketId}`);
     await expect(second.getByTestId("ticket-status")).toContainText("IN_PROGRESS");
 
     await page.getByLabel("Change status").selectOption("PENDING_CUSTOMER");
@@ -108,13 +108,13 @@ test.describe("ticket lifecycle", () => {
     await expect(page.getByText("Here is the requested diagnostic log.")).toBeVisible();
 
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
     await expect(page.getByTestId("ticket-status")).toContainText("OPEN");
   });
 
   test("E6S1_closed_ticket_is_read_only", async ({ page }) => {
     await login(page, "agent1");
-    await page.goto(`/tickets/${ticketId}`);
+    await page.goto(`/agent/tickets/${ticketId}`);
 
     // Customer's reply put the ticket back to OPEN; drive it to CLOSED.
     await expect(page.getByTestId("ticket-status")).toContainText("OPEN");

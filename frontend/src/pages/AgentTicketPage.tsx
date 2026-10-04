@@ -1,8 +1,8 @@
-// GET /api/tickets/{id} and the lifecycle/claim/reassign/notes/replies actions
-// (component-map.md, E6-S1, E6-S3, AC-03/04/07/08). Shared by customer,
-// agent and admin: the backend already filters notes/history to agent/admin
-// only, so this page shows action controls when the viewer's role allows
-// them and never shows notes/history for a customer.
+// GET /api/tickets/{id}, GET /api/tickets/{id}/sla, and the lifecycle/claim/
+// reassign/notes/replies actions (component-map.md, E6-S1, AC-03/04/07/08).
+// Agent-initiated edges only (ticket-lifecycle_spec.md Section 2); the
+// customer-initiated PENDING_CUSTOMER -> OPEN edge happens via a reply on
+// CustomerTicketPage, not this control, and CLOSED is terminal.
 
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,12 +17,13 @@ import type {
   StatusResponse,
   TicketDetail,
 } from "../api/types";
+import { ClaimReassignPanel } from "../components/ClaimReassignPanel";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { getRole } from "../state/session";
+import { ReplyBox } from "../components/ReplyBox";
+import { SlaBadge } from "../components/SlaBadge";
+import { StatusControl } from "../components/StatusControl";
+import { ThreadPanel } from "../components/ThreadPanel";
 
-// Agent-initiated edges only (ticket-lifecycle_spec.md Section 2); the
-// customer-initiated PENDING_CUSTOMER -> OPEN edge happens via a reply, not
-// this control, and CLOSED is terminal.
 const VALID_NEXT_STATES: Record<Status, Status[]> = {
   OPEN: ["IN_PROGRESS"],
   IN_PROGRESS: ["PENDING_CUSTOMER", "RESOLVED"],
@@ -31,10 +32,8 @@ const VALID_NEXT_STATES: Record<Status, Status[]> = {
   CLOSED: [],
 };
 
-export function TicketDetailPage(): JSX.Element {
+export function AgentTicketPage(): JSX.Element {
   const { id } = useParams<{ id: string }>();
-  const role = getRole();
-  const isStaff = role === "agent" || role === "admin";
 
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [sla, setSla] = useState<SlaSnapshot | null>(null);
@@ -160,106 +159,67 @@ export function TicketDetailPage(): JSX.Element {
 
       {sla && (
         <section aria-label="SLA status">
-          <p data-testid="sla-response-state">Response: {sla.response.state}</p>
-          <p data-testid="sla-resolution-state">Resolution: {sla.resolution.state}</p>
+          <p data-testid="sla-response-state">
+            Response: <SlaBadge state={sla.response.state} />
+          </p>
+          <p data-testid="sla-resolution-state">
+            Resolution: <SlaBadge state={sla.resolution.state} />
+          </p>
         </section>
       )}
 
-      {isStaff && isClosed && <p>Closed tickets cannot be changed.</p>}
+      {isClosed && <p>Closed tickets cannot be changed.</p>}
 
-      {isStaff && !isClosed && (
+      {!isClosed && (
         <section aria-label="Agent actions">
           <h2>Actions</h2>
-          <button type="button" onClick={handleClaim}>
-            Claim
-          </button>
-
-          <form onSubmit={handleReassign}>
-            <label htmlFor="reassign-to">Reassign to (user id)</label>
-            <input
-              id="reassign-to"
-              value={reassignTo}
-              onChange={(e) => setReassignTo(e.target.value)}
-            />
-            <button type="submit">Reassign</button>
-          </form>
-
-          {nextStates.length > 0 && (
-            <form onSubmit={handleStatusChange}>
-              <label htmlFor="next-status">Change status</label>
-              <select
-                id="next-status"
-                value={selectedNextStatus}
-                onChange={(e) => setNextStatus(e.target.value as Status)}
-              >
-                {nextStates.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <button type="submit">Update status</button>
-            </form>
-          )}
+          <ClaimReassignPanel
+            onClaim={handleClaim}
+            reassignTo={reassignTo}
+            onReassignToChange={setReassignTo}
+            onReassign={handleReassign}
+          />
+          <StatusControl
+            nextStates={nextStates}
+            selected={selectedNextStatus}
+            onChange={setNextStatus}
+            onSubmit={handleStatusChange}
+          />
         </section>
       )}
 
-      {isStaff && canPublishToKb && (
-        <Link to={`/kb/new?source_ticket_id=${ticket.id}`}>Publish to knowledge base</Link>
+      {canPublishToKb && (
+        <Link to={`/agent/kb/new?source_ticket_id=${ticket.id}`}>Publish to knowledge base</Link>
       )}
 
-      {isStaff && (
-        <section aria-label="Internal notes">
-          <h2>Internal notes</h2>
-          <ul>
-            {ticket.notes.map((note) => (
-              <li key={note.id}>{note.body}</li>
-            ))}
-          </ul>
-          {!isClosed && (
+      <ThreadPanel
+        replies={ticket.replies}
+        notes={ticket.notes}
+        showNotes
+        noteForm={
+          !isClosed ? (
             <form onSubmit={handleAddNote}>
               <label htmlFor="note-body">Add a note</label>
               <textarea id="note-body" value={noteBody} onChange={(e) => setNoteBody(e.target.value)} />
               <button type="submit">Add note</button>
             </form>
-          )}
-        </section>
-      )}
+          ) : null
+        }
+        replyBox={
+          canReply ? <ReplyBox value={replyBody} onChange={setReplyBody} onSubmit={handleReply} /> : null
+        }
+      />
 
-      <section aria-label="Replies">
-        <h2>Replies</h2>
+      <section aria-label="History">
+        <h2>History</h2>
         <ul>
-          {ticket.replies.map((reply) => (
-            <li key={reply.id}>
-              <strong>{reply.author_role}:</strong> {reply.body}
+          {ticket.history.map((entry) => (
+            <li key={entry.id}>
+              {entry.event}: {entry.from_state ?? "—"} to {entry.to_state ?? "—"}
             </li>
           ))}
         </ul>
-        {canReply && (
-          <form onSubmit={handleReply} aria-label="Reply box">
-            <label htmlFor="reply-body">Reply</label>
-            <textarea
-              id="reply-body"
-              value={replyBody}
-              onChange={(e) => setReplyBody(e.target.value)}
-            />
-            <button type="submit">Send reply</button>
-          </form>
-        )}
       </section>
-
-      {isStaff && (
-        <section aria-label="History">
-          <h2>History</h2>
-          <ul>
-            {ticket.history.map((entry) => (
-              <li key={entry.id}>
-                {entry.event}: {entry.from_state ?? "—"} to {entry.to_state ?? "—"}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </main>
   );
 }
