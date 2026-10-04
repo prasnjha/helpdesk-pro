@@ -4,12 +4,17 @@ reassign, status, notes and replies (agent-workbench_spec.md, ticket-lifecycle_s
 
 from __future__ import annotations
 
+import logging
+
 from sqlalchemy import Engine
 
+from src.config.ticket_logging import log_ticket_content
 from src.repository import ticket_repository, user_repository
 from src.types.clock import Clock
 from src.types.errors import NotFoundError, ValidationError
 from src.types.models import TicketRecord, TicketReplyRecord, TicketSummary
+
+_ticket_log = logging.getLogger("helpdesk.tickets")
 
 
 def list_my_tickets(engine: Engine, customer_id: str) -> list[TicketSummary]:
@@ -26,7 +31,7 @@ def create_ticket(
     priority: str,
     customer_id: str,
 ) -> TicketRecord:
-    return ticket_repository.create_ticket(
+    ticket = ticket_repository.create_ticket(
         engine,
         title=title,
         description=description,
@@ -35,6 +40,15 @@ def create_ticket(
         customer_id=customer_id,
         now=clock.now(),
     )
+    log_ticket_content(
+        _ticket_log,
+        logging.INFO,
+        "ticket created",
+        ticket_id=ticket.id,
+        subject=title,
+        body=description,
+    )
+    return ticket
 
 
 def get_ticket_for_customer(engine: Engine, ticket_id: str, customer_id: str) -> TicketRecord:
