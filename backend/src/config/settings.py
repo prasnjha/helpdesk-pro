@@ -11,6 +11,7 @@ class Settings:
     database_url: str
     migrations_dir: str
     cors_allowed_origins: list[str]
+    log_level: str
 
 
 def get_settings() -> Settings:
@@ -27,4 +28,5 @@ def get_settings() -> Settings:
         database_url=database_url,
         migrations_dir=os.path.abspath(migrations_dir),
         cors_allowed_origins=cors_allowed_origins,
+        log_level=os.environ.get("LOG_LEVEL", "INFO").strip().upper() or "INFO",
     )

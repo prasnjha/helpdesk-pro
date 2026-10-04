@@ -17,12 +17,8 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
         if isinstance(exc, TicketClosedImmutableError):
-            correlation_id = request.headers.get("X-Correlation-Id")
-            logger.info(
-                "Rejected write to CLOSED ticket: %s (correlation_id=%s)",
-                exc.message,
-                correlation_id,
-            )
+            # correlation_id is added to the JSON line by the logging filter.
+            logger.info("Rejected write to CLOSED ticket: %s", exc.message)
         return JSONResponse(status_code=exc.status_code, content=exc.to_envelope())
 
     @app.exception_handler(RequestValidationError)

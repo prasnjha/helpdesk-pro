@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import Engine
 
+from src.api.correlation_middleware import CORRELATION_HEADER, CorrelationIdMiddleware
 from src.api.error_handlers import register_error_handlers
 from src.api.routers import admin, agent, auth, health, kb, tickets
 from src.repository.token_store import TokenStore
@@ -23,7 +24,10 @@ def create_app(engine: Engine, clock: Clock, cors_allowed_origins: list[str]) ->
         allow_origins=cors_allowed_origins,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
+        expose_headers=[CORRELATION_HEADER],
     )
+    # Added last so it is the outermost middleware: every HTTP response carries the id.
+    app.add_middleware(CorrelationIdMiddleware)
 
     register_error_handlers(app)
 
