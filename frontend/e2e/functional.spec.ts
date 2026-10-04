@@ -98,7 +98,7 @@ test.describe("ticket lifecycle", () => {
     await second.close();
   });
 
-  test("AC08_customer_reply_on_pending_customer_moves_ticket_to_open", async ({ page }) => {
+  test("AC-08 customer reply on pending-customer moves ticket to open", async ({ page }) => {
     await login(page, "customer1");
     await page.goto(`/tickets/${ticketId}`);
 
