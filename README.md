@@ -111,11 +111,14 @@ Business rules live in `backend/src/domain`. One-way dependencies only, enforced
 | `/login` | any | Sign in |
 | `/tickets` | customer | Own ticket list, link to a new ticket |
 | `/tickets/new` | customer | Create a ticket |
-| `/tickets/:id` | customer, agent, admin | Ticket detail, SLA state, reply box; agents/admins also get claim, reassign, status, notes, history and a publish-to-KB link |
-| `/agent/queues` | agent, admin | Queue with priority/status/escalated filters |
-| `/admin` | admin | SLA policy editor with version history, plus the dashboard tables |
+| `/tickets/:id` | customer | Ticket detail, SLA state, reply box |
+| `/agent/queues/:queue` | agent, admin | Queue with priority/status/escalated filters |
+| `/agent/tickets/:id` | agent, admin | Ticket detail, SLA state, claim, reassign, status, notes, history and a publish-to-KB link |
+| `/admin/sla-policies` | admin | SLA policy editor with version history |
+| `/admin/dashboard` | admin | Dashboard tables |
 | `/kb` | any | Knowledge base search and list |
-| `/kb/:id`, `/kb/new` | any (editor for agent/admin only) | Article detail, or the publish/edit form |
+| `/kb/:id` | any | Article detail (editor controls for agent/admin only) |
+| `/agent/kb/new`, `/agent/kb/:id/edit` | agent, admin | Publish or edit form |
 
 ## CI
 
