@@ -1,4 +1,5 @@
-/* Reusable component styles (DESIGN.md Section 5). */
+/* Buttons, inputs, forms, cards and banners (DESIGN.md Section 5). Chips
+   live in chips.css, tables in tables.css, the thread in thread.css. */
 
 /* ---- Buttons (5.1) ----------------------------------------------------- */
 
@@ -31,22 +32,35 @@ button:active,
   background: var(--color-primary-active);
 }
 
-.btn-secondary,
+button.btn-secondary,
 .btn.btn-secondary {
   background: var(--color-surface-card);
   border-color: var(--color-border);
   color: var(--color-text-body);
 }
 
-.btn-secondary:hover,
+button.btn-secondary:hover,
 .btn.btn-secondary:hover {
   background: var(--color-surface-sidebar);
   color: var(--color-text-strong);
 }
 
-.btn-secondary:active,
+button.btn-secondary:active,
 .btn.btn-secondary:active {
   background: var(--color-border);
+}
+
+button.btn-danger,
+.btn.btn-danger {
+  background: var(--color-critical);
+  color: #ffffff;
+}
+
+button.btn-danger:hover,
+.btn.btn-danger:hover,
+button.btn-danger:active {
+  background: #b91c1c;
+  color: #ffffff;
 }
 
 .btn-sm {
@@ -54,17 +68,25 @@ button:active,
   padding: 0 var(--space-md);
 }
 
-.btn-icon {
+button.btn-icon {
   width: 40px;
   padding: 0;
   background: transparent;
   color: var(--color-secondary);
 }
 
-.btn-icon:hover,
-.btn-icon:active {
+button.btn-icon:hover,
+button.btn-icon:active {
   background: var(--color-surface-sidebar);
   color: var(--color-secondary);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  align-self: flex-start;
+  font: var(--text-label-lg);
 }
 
 /* ---- Inputs (5.2) ------------------------------------------------------ */
@@ -106,16 +128,92 @@ input[readonly] {
   color: var(--color-text-muted);
 }
 
+input[aria-invalid="true"] {
+  border-color: var(--color-critical);
+  box-shadow: var(--focus-ring-error);
+}
+
 label {
   font: var(--text-label-lg);
   color: var(--color-text-strong);
 }
+
+/* ---- Forms ------------------------------------------------------------- */
 
 form {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   max-width: 100%;
+}
+
+form.ticket-form {
+  gap: var(--space-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+}
+
+.field-error {
+  font: var(--text-body-sm);
+  color: var(--color-critical);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--gutter);
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.inline-form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.inline-form .field {
+  flex: 1 1 180px;
+}
+
+.policy-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: var(--gutter);
+}
+
+.filter-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 767px) {
+  .policy-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions > button,
+  .form-actions > .btn {
+    flex: 1;
+  }
 }
 
 /* ---- Avatar ------------------------------------------------------------ */
@@ -133,9 +231,106 @@ form {
   font: var(--text-label-lg);
 }
 
-/* ---- Tables ------------------------------------------------------------ */
+/* ---- Cards (5.4) ------------------------------------------------------- */
 
-table {
-  border-collapse: collapse;
-  width: 100%;
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+  padding: var(--space-xl);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-1);
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-surface-sidebar);
+}
+
+.card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font: var(--text-headline-sm);
+  color: var(--color-secondary);
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.table-card {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-card > .card-header {
+  padding: var(--space-lg) var(--space-xl);
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: var(--space-lg);
+  }
+
+  .table-card {
+    padding: 0;
+  }
+
+  .table-card > .card-header {
+    padding: var(--space-md) var(--space-lg);
+  }
+}
+
+/* ---- Banners ----------------------------------------------------------- */
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-card);
+  font: var(--text-label-lg);
+}
+
+.banner-critical {
+  background: var(--color-critical-bg);
+  border-color: var(--color-critical-border);
+  color: var(--chip-critical-text);
+}
+
+.banner-info {
+  background: var(--chip-open-bg);
+  border-color: var(--chip-open-border);
+  color: var(--color-secondary);
+}
+
+.banner-success {
+  background: var(--color-success-bg);
+  border-color: var(--chip-resolved-border);
+  color: var(--chip-resolved-text);
+}
+
+.banner-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.banner-body p {
+  font: var(--text-body-md);
+  color: var(--color-text-body);
 }

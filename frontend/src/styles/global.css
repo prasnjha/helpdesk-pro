@@ -6,6 +6,9 @@
 
 @import "./tokens.css";
 @import "./components.css";
+@import "./chips.css";
+@import "./tables.css";
+@import "./thread.css";
 @import "./pages.css";
 
 * {

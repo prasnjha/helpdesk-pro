@@ -20,29 +20,33 @@ export function QueueFilters({
   onPriorityChange,
 }: QueueFiltersProps): JSX.Element {
   return (
-    <>
-      <label htmlFor="queue-select">Queue</label>
-      <select id="queue-select" value={queue} onChange={(e) => onQueueChange(e.target.value)}>
-        {queues.map((q) => (
-          <option key={q.slug} value={q.slug}>
-            {q.name}
-          </option>
-        ))}
-      </select>
+    <div className="filter-fields">
+      <div className="field">
+        <label htmlFor="queue-select">Queue</label>
+        <select id="queue-select" value={queue} onChange={(e) => onQueueChange(e.target.value)}>
+          {queues.map((q) => (
+            <option key={q.slug} value={q.slug}>
+              {q.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <label htmlFor="priority-filter">Priority</label>
-      <select
-        id="priority-filter"
-        value={priority}
-        onChange={(e) => onPriorityChange(e.target.value as Priority | "")}
-      >
-        <option value="">All</option>
-        {priorities.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
-    </>
+      <div className="field">
+        <label htmlFor="priority-filter">Priority</label>
+        <select
+          id="priority-filter"
+          value={priority}
+          onChange={(e) => onPriorityChange(e.target.value as Priority | "")}
+        >
+          <option value="">All</option>
+          {priorities.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   );
 }

@@ -29,47 +29,73 @@ export function TicketForm({ onSubmit }: TicketFormProps): JSX.Element {
     void onSubmit({ title, description, category, priority });
   }
 
+  const titleInvalid = validationMessage !== null;
+
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="title">Title</label>
-      <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
+    <form onSubmit={handleSubmit} className="ticket-form">
+      <div className="form-row">
+        <div className="field">
+          <label htmlFor="category">Category</label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <label htmlFor="description">Description</label>
-      <textarea
-        id="description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+        <div className="field">
+          <label htmlFor="priority">Priority</label>
+          <select
+            id="priority"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Priority)}
+          >
+            {PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      <label htmlFor="category">Category</label>
-      <select
-        id="category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value as Category)}
-      >
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+      <div className="field">
+        <label htmlFor="title">Title</label>
+        <input
+          id="title"
+          value={title}
+          placeholder="Short summary of the issue"
+          aria-invalid={titleInvalid}
+          aria-describedby={titleInvalid ? "title-error" : undefined}
+          className={titleInvalid ? "is-invalid" : undefined}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        {validationMessage && (
+          <p role="alert" id="title-error" className="field-error">
+            {validationMessage}
+          </p>
+        )}
+      </div>
 
-      <label htmlFor="priority">Priority</label>
-      <select
-        id="priority"
-        value={priority}
-        onChange={(e) => setPriority(e.target.value as Priority)}
-      >
-        {PRIORITIES.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
+      <div className="field">
+        <label htmlFor="description">Description</label>
+        <textarea
+          id="description"
+          value={description}
+          placeholder="What happened, and what did you expect?"
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
 
-      {validationMessage && <p role="alert">{validationMessage}</p>}
-
-      <button type="submit">Submit</button>
+      <div className="form-actions">
+        <button type="submit">Submit</button>
+      </div>
     </form>
   );
 }

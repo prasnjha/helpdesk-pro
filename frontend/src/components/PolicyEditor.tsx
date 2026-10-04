@@ -28,35 +28,43 @@ export function PolicyEditor({
   onSubmit,
 }: PolicyEditorProps): JSX.Element {
   return (
-    <form onSubmit={onSubmit}>
-      <label htmlFor="policy-priority">Priority</label>
-      <select
-        id="policy-priority"
-        value={priority}
-        onChange={(e) => onPriorityChange(e.target.value as Priority)}
-      >
-        {priorities.map((p) => (
-          <option key={p} value={p}>
-            {p}
-          </option>
-        ))}
-      </select>
+    <form onSubmit={onSubmit} className="policy-form">
+      <div className="field">
+        <label htmlFor="policy-priority">Priority</label>
+        <select
+          id="policy-priority"
+          value={priority}
+          onChange={(e) => onPriorityChange(e.target.value as Priority)}
+        >
+          {priorities.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <label htmlFor="policy-response">Response minutes</label>
-      <input
-        id="policy-response"
-        value={responseMinutes}
-        onChange={(e) => onResponseMinutesChange(e.target.value)}
-      />
+      <div className="field">
+        <label htmlFor="policy-response">Response minutes</label>
+        <input
+          id="policy-response"
+          value={responseMinutes}
+          onChange={(e) => onResponseMinutesChange(e.target.value)}
+        />
+      </div>
 
-      <label htmlFor="policy-resolution">Resolution minutes</label>
-      <input
-        id="policy-resolution"
-        value={resolutionMinutes}
-        onChange={(e) => onResolutionMinutesChange(e.target.value)}
-      />
+      <div className="field">
+        <label htmlFor="policy-resolution">Resolution minutes</label>
+        <input
+          id="policy-resolution"
+          value={resolutionMinutes}
+          onChange={(e) => onResolutionMinutesChange(e.target.value)}
+        />
+      </div>
 
-      <button type="submit">Save new version</button>
+      <div className="form-actions">
+        <button type="submit">Save new version</button>
+      </div>
     </form>
   );
 }
