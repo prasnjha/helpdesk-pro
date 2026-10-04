@@ -11,12 +11,13 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Engine
+from sqlalchemy import Connection, Engine
 
 from src.domain.escalation import tier2_slug_for
 from src.domain.sla import SlaSnapshot, breach_deadline, evaluate_sla
 from src.repository import sla_event_repository, sla_policy_repository, team_repository
 from src.repository import ticket_repository as tickets
+from src.types.models import TicketRecord
 
 _TIMER_EVENTS = {
     "response": "BREACHED_RESPONSE",
@@ -26,6 +27,57 @@ _TIMER_EVENTS = {
 
 def _parse(value: str | None) -> datetime | None:
     return None if value is None else datetime.fromisoformat(value)
+
+
+def _record_breaches(
+    conn: Connection, *, ticket_id: str, created_at: datetime, snapshot: SlaSnapshot, now_iso: str
+) -> bool:
+    """Insert one SlaEvent per timer newly found BREACHED. Returns whether any
+    were recorded; `has_breach` makes a repeat call a no-op per timer.
+    """
+    newly_breached = False
+    for timer_name, timer_snapshot in (
+        ("response", snapshot.response),
+        ("resolution", snapshot.resolution),
+    ):
+        if timer_snapshot.state != "BREACHED":
+            continue
+        if sla_event_repository.has_breach(conn, ticket_id, timer_name):
+            continue
+        deadline = breach_deadline(created_at, timer_snapshot.target_minutes)
+        sla_event_repository.insert(
+            conn,
+            ticket_id=ticket_id,
+            event=_TIMER_EVENTS[timer_name],
+            timer=timer_name,
+            breached_at=deadline.isoformat(),
+            created_at=now_iso,
+        )
+        newly_breached = True
+    return newly_breached
+
+
+def _escalate_if_needed(
+    conn: Connection, *, ticket: TicketRecord, now: datetime, now_iso: str
+) -> None:
+    """Move `ticket` to its tier-2 queue once, the first time any timer
+    breaches (escalation_spec.md). A no-op once `ticket.escalated` is set.
+    """
+    if ticket.escalated:
+        return
+    tier2_slug = tier2_slug_for(ticket.queue.slug)
+    tier2_queue_id = team_repository.get_id_by_slug(conn, tier2_slug)
+    if tier2_queue_id is None:
+        return
+    tickets.escalate(conn, ticket_id=ticket.id, to_queue_id=tier2_queue_id, now=now)
+    sla_event_repository.insert(
+        conn,
+        ticket_id=ticket.id,
+        event="ESCALATED",
+        timer=None,
+        breached_at=None,
+        created_at=now_iso,
+    )
 
 
 def evaluate_and_escalate(engine: Engine, *, ticket_id: str, now: datetime) -> SlaSnapshot | None:
@@ -56,38 +108,10 @@ def evaluate_and_escalate(engine: Engine, *, ticket_id: str, now: datetime) -> S
             return snapshot
 
         now_iso = now.isoformat()
-        newly_breached = False
-        for timer_name, timer_snapshot in (
-            ("response", snapshot.response),
-            ("resolution", snapshot.resolution),
-        ):
-            if timer_snapshot.state != "BREACHED":
-                continue
-            if sla_event_repository.has_breach(conn, ticket_id, timer_name):
-                continue
-            deadline = breach_deadline(created_at, timer_snapshot.target_minutes)
-            sla_event_repository.insert(
-                conn,
-                ticket_id=ticket_id,
-                event=_TIMER_EVENTS[timer_name],
-                timer=timer_name,
-                breached_at=deadline.isoformat(),
-                created_at=now_iso,
-            )
-            newly_breached = True
-
-        if newly_breached and not ticket.escalated:
-            tier2_slug = tier2_slug_for(ticket.queue.slug)
-            tier2_queue_id = team_repository.get_id_by_slug(conn, tier2_slug)
-            if tier2_queue_id is not None:
-                tickets.escalate(conn, ticket_id=ticket_id, to_queue_id=tier2_queue_id, now=now)
-                sla_event_repository.insert(
-                    conn,
-                    ticket_id=ticket_id,
-                    event="ESCALATED",
-                    timer=None,
-                    breached_at=None,
-                    created_at=now_iso,
-                )
+        newly_breached = _record_breaches(
+            conn, ticket_id=ticket_id, created_at=created_at, snapshot=snapshot, now_iso=now_iso
+        )
+        if newly_breached:
+            _escalate_if_needed(conn, ticket=ticket, now=now, now_iso=now_iso)
 
         return snapshot
