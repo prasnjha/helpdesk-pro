@@ -266,8 +266,8 @@
       "POST /api/kb/articles as agent A-1 with source_ticket_id HD-000030, title, body, and tags",
       "Assert response 201 and source_ticket_id is HD-000030"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -282,8 +282,8 @@
       "As customer C-1, PUT and DELETE an existing article and assert 403 for each",
       "Assert the article table is unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T00:00:00Z",
     "failure_reason": null,
     "failure_layer": null
   },

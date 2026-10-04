@@ -102,6 +102,25 @@ class SlaEventRecord:
 
 
 @dataclass(frozen=True)
+class KbArticleRecord:
+    id: int
+    title: str
+    body: str
+    tags: tuple[str, ...]
+    source_ticket_id: str
+    created_by: str
+    updated_at: str
+
+
+@dataclass(frozen=True)
+class KbArticleSummary:
+    id: int
+    title: str
+    tags: tuple[str, ...]
+    updated_at: str
+
+
+@dataclass(frozen=True)
 class TicketHistoryRecord:
     id: int
     ticket_id: str
