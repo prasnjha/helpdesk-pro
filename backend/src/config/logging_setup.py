@@ -24,10 +24,6 @@ UVICORN_LOGGERS = ("uvicorn", "uvicorn.error", "uvicorn.access")
 correlation_id_var: ContextVar[str | None] = ContextVar("correlation_id", default=None)
 
 
-def get_correlation_id() -> str | None:
-    return correlation_id_var.get()
-
-
 class CorrelationIdFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.correlation_id = correlation_id_var.get()
