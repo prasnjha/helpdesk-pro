@@ -23,6 +23,7 @@ def create_app(engine: Engine, clock: Clock) -> FastAPI:
     app.include_router(auth.router)
     app.include_router(tickets.router)
     app.include_router(admin.router)
+    app.include_router(admin.dashboard_router)
     app.include_router(kb.router)
     app.include_router(agent.router)
 

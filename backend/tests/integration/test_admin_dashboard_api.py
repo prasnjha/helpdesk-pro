@@ -47,8 +47,8 @@ def test_F023_dashboard_counts_breaches_and_escalations_in_period(
     client.post(f"/api/tickets/{ticket_id}/claim", json={"version": 1}, headers=agent_headers)
     clock.advance(61)  # High response target is 60 minutes (seed policy)
 
-    # Any authenticated read evaluates the timers and records the breach/escalation.
-    client.get(f"/api/tickets/{ticket_id}", headers=agent_headers)
+    # Reading the SLA snapshot evaluates the timers and records the breach/escalation.
+    client.get(f"/api/tickets/{ticket_id}/sla", headers=agent_headers)
 
     admin_headers = auth_header(client, "admin1")
     resp = client.get(
