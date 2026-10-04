@@ -1,0 +1,141 @@
+/* Reusable component styles (DESIGN.md Section 5). */
+
+/* ---- Buttons (5.1) ----------------------------------------------------- */
+
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: 40px;
+  padding: 0 var(--space-lg);
+  border-radius: var(--radius-default);
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: #ffffff;
+  font: var(--text-label-lg);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--color-primary-hover);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+button:active,
+.btn:active {
+  background: var(--color-primary-active);
+}
+
+.btn-secondary,
+.btn.btn-secondary {
+  background: var(--color-surface-card);
+  border-color: var(--color-border);
+  color: var(--color-text-body);
+}
+
+.btn-secondary:hover,
+.btn.btn-secondary:hover {
+  background: var(--color-surface-sidebar);
+  color: var(--color-text-strong);
+}
+
+.btn-secondary:active,
+.btn.btn-secondary:active {
+  background: var(--color-border);
+}
+
+.btn-sm {
+  height: 32px;
+  padding: 0 var(--space-md);
+}
+
+.btn-icon {
+  width: 40px;
+  padding: 0;
+  background: transparent;
+  color: var(--color-secondary);
+}
+
+.btn-icon:hover,
+.btn-icon:active {
+  background: var(--color-surface-sidebar);
+  color: var(--color-secondary);
+}
+
+/* ---- Inputs (5.2) ------------------------------------------------------ */
+
+input,
+select,
+textarea {
+  height: 40px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-default);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-card);
+  color: var(--color-text-strong);
+  font: var(--text-body-md);
+}
+
+textarea {
+  height: auto;
+  min-height: 112px;
+  padding: var(--space-md);
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-input);
+}
+
+input[readonly] {
+  background: var(--color-canvas);
+  color: var(--color-text-muted);
+}
+
+label {
+  font: var(--text-label-lg);
+  color: var(--color-text-strong);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 100%;
+}
+
+/* ---- Avatar ------------------------------------------------------------ */
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #ffffff;
+  font: var(--text-label-lg);
+}
+
+/* ---- Tables ------------------------------------------------------------ */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}

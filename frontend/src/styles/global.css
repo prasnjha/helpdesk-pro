@@ -1,40 +1,12 @@
-/* DESIGN.md tokens as CSS variables (Sections 1-4), plus the responsive
-   baseline (frontend/CLAUDE.md, E6-S3): 375, 768, 1280 px, no horizontal
-   page scroll at 375 px. */
+/* Base element styles and the AppShell layout. Tokens live in tokens.css
+   (DESIGN.md Sections 1-4). Breakpoints follow DESIGN.md Section 3:
+   desktop >= 1024 px (240 px nav rail), tablet 768-1023 px and mobile
+   < 768 px (nav becomes an overlay drawer). No horizontal page scroll at
+   375 px (frontend/CLAUDE.md, E6-S3). */
 
-:root {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-active: #1e40af;
-  --color-secondary: #0f172a;
-  --color-critical: #dc2626;
-  --color-critical-bg: #fef2f2;
-  --color-critical-border: #fca5a5;
-  --color-success: #059669;
-  --color-success-bg: #ecfdf5;
-  --color-warning: #d97706;
-  --color-warning-bg: #fffbeb;
-
-  --color-canvas: #f8fafc;
-  --color-surface-sidebar: #f1f5f9;
-  --color-surface-card: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-body: #334155;
-  --color-text-muted: #64748b;
-  --color-text-strong: #0f172a;
-
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 24px;
-  --space-2xl: 32px;
-
-  --radius-sm: 4px;
-  --radius-default: 8px;
-  --radius-card: 16px;
-  --radius-full: 9999px;
-}
+@import "./tokens.css";
+@import "./components.css";
+@import "./pages.css";
 
 * {
   box-sizing: border-box;
@@ -47,77 +19,53 @@ body {
   overflow-x: hidden;
   background: var(--color-canvas);
   color: var(--color-text-body);
-  font-family: Inter, system-ui, sans-serif;
+  font: var(--text-body-md);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 100%;
+  min-height: 100vh;
 }
 
 h1,
 h2,
 h3 {
+  margin: 0;
   color: var(--color-secondary);
 }
 
-.app-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-lg);
-  background: var(--color-surface-sidebar);
-  border-bottom: 1px solid var(--color-border);
+h1 {
+  font: var(--text-headline-lg);
+  letter-spacing: var(--tracking-headline-lg);
 }
 
-.app-header-logo {
-  width: 32px;
-  height: 32px;
+h2 {
+  font: var(--text-headline-sm);
 }
 
-.app-header-name {
-  font-weight: 700;
-  color: var(--color-secondary);
+h3 {
+  font: var(--text-label-lg);
 }
 
-button {
-  height: 40px;
-  padding: 0 var(--space-lg);
-  border-radius: var(--radius-default);
-  border: 1px solid var(--color-border);
-  background: var(--color-primary);
-  color: #ffffff;
-  font-weight: 600;
-  cursor: pointer;
+p {
+  margin: 0;
 }
 
-button:hover {
-  background: var(--color-primary-hover);
+a {
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
-button:active {
-  background: var(--color-primary-active);
+a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
 }
 
-input,
-select,
-textarea {
-  height: 40px;
-  padding: 0 var(--space-md);
-  border-radius: var(--radius-default);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-card);
-  color: var(--color-text-strong);
-}
-
-textarea {
-  height: auto;
-  padding: var(--space-md);
-}
-
-#root {
-  max-width: 100%;
-}
-
-main {
-  padding: 1rem;
-  max-width: 1280px;
-  margin: 0 auto;
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-button);
 }
 
 img,
@@ -127,25 +75,259 @@ select {
   max-width: 100%;
 }
 
-form {
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+.icon {
+  flex: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Page container ---------------------------------------------------- */
+
+main {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: 100%;
-}
-
-/* Tables are the most likely cause of horizontal overflow on a narrow
-   viewport (the customer ticket list, agent queue, admin policy history).
-   Scroll the table itself instead of the page. */
-table {
-  border-collapse: collapse;
+  gap: var(--space-xl);
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--margin-lg);
 }
 
-@media (max-width: 480px) {
-  table {
+/* ---- AppShell ----------------------------------------------------------- */
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: var(--header-height);
+  padding: 0 var(--margin-lg) 0 var(--space-xl);
+  background: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header-menu {
+  display: none;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.app-header-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-default);
+}
+
+.app-header-name {
+  font: var(--text-headline-sm);
+  letter-spacing: var(--tracking-headline-md);
+  color: var(--color-secondary);
+  white-space: nowrap;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-left: auto;
+  min-width: 0;
+}
+
+.app-header-identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: right;
+}
+
+.app-header-username {
+  font: var(--text-label-lg);
+  color: var(--color-text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-header-role {
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.app-body {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+}
+
+.side-nav {
+  flex: none;
+  width: var(--nav-rail-width);
+  padding: var(--space-xl) var(--space-md);
+  background: var(--color-surface-sidebar);
+  border-right: 1px solid var(--color-border);
+}
+
+.side-nav-heading {
+  margin: 0 var(--space-md) var(--space-md);
+  font: var(--text-label-sm);
+  letter-spacing: var(--tracking-label-sm);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.side-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  list-style: none;
+}
+
+.side-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: 40px;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-default);
+  font: var(--text-label-lg);
+  color: var(--color-secondary);
+}
+
+.side-nav-link:hover {
+  background: var(--color-border);
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+
+.side-nav-link.is-active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.app-backdrop {
+  display: none;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tablet and mobile: the rail becomes an overlay drawer (DESIGN.md 3/5.6). */
+@media (max-width: 1023px) {
+  .app-header {
+    padding: 0 var(--margin-md) 0 var(--space-md);
+  }
+
+  .app-header-menu {
+    display: inline-flex;
+  }
+
+  .side-nav {
+    position: fixed;
+    top: var(--header-height);
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    width: min(280px, 85vw);
+    overflow-y: auto;
+    box-shadow: var(--shadow-3);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0.2s;
+  }
+
+  .side-nav.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .app-backdrop {
     display: block;
-    overflow-x: auto;
+    position: fixed;
+    inset: var(--header-height) 0 0 0;
+    z-index: 35;
+    background: var(--backdrop);
+    backdrop-filter: blur(2px);
+  }
+
+  main {
+    padding: var(--margin-md);
+  }
+}
+
+@media (max-width: 767px) {
+  .app-header {
+    gap: var(--space-sm);
+    padding: 0 var(--margin);
+    padding-left: var(--space-sm);
+  }
+
+  .app-header-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .app-header-name {
+    font: var(--text-label-lg);
+    font-size: 16px;
+  }
+
+  .app-header-user .avatar,
+  .app-header-role {
+    display: none;
+  }
+
+  .app-header-username {
+    max-width: 96px;
+  }
+
+  .app-header-logout {
+    width: 40px;
+    padding: 0;
+  }
+
+  .app-header-logout-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
     white-space: nowrap;
+  }
+
+  main {
+    gap: var(--space-lg);
+    padding: var(--margin);
+  }
+
+  h1 {
+    font: var(--text-headline-lg-mobile);
+    letter-spacing: var(--tracking-headline-md);
   }
 }

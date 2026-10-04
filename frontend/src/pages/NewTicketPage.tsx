@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ApiError, apiRequest } from "../api/client";
 import type { CreateTicketRequest, CreateTicketResponse } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { Header } from "../components/Header";
 import { TicketForm } from "../components/TicketForm";
 
 export function NewTicketPage(): JSX.Element {
@@ -27,26 +26,20 @@ export function NewTicketPage(): JSX.Element {
 
   if (confirmation) {
     return (
-      <>
-        <Header />
         <main>
           <h1>Ticket created</h1>
           <p>
             {confirmation.id} is {confirmation.status}.
           </p>
         </main>
-      </>
     );
   }
 
   return (
-    <>
-      <Header />
       <main>
         <h1>New ticket</h1>
         <ErrorBanner message={error} />
         <TicketForm onSubmit={handleSubmit} />
       </main>
-    </>
   );
 }

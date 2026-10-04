@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { ApiError, apiRequest } from "../api/client";
 import type { TicketSummary } from "../api/types";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { Header } from "../components/Header";
 
 export function MyTicketsPage(): JSX.Element {
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
@@ -21,8 +20,6 @@ export function MyTicketsPage(): JSX.Element {
   }, []);
 
   return (
-    <>
-      <Header />
       <main>
       <h1>My tickets</h1>
       <ErrorBanner message={error} />
@@ -50,6 +47,5 @@ export function MyTicketsPage(): JSX.Element {
         </tbody>
       </table>
       </main>
-    </>
   );
 }
