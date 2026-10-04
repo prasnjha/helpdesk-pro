@@ -70,7 +70,7 @@ describe("CustomerTicketPage", () => {
     expect(screen.queryByText("Actions")).not.toBeInTheDocument();
   });
 
-  it("AC08_customer_reply_posts_and_reloads_the_ticket", async () => {
+  it("AC-08 customer reply posts and reloads the ticket", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(jsonResponse(baseTicket))
       .mockResolvedValueOnce(jsonResponse(slaSnapshot))

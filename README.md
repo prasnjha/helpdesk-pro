@@ -18,14 +18,13 @@ manage versioned SLA policies. Synthetic seed data only.
 ./init.sh
 # (or manually: cd backend && uv sync && cd ../frontend && npm ci)
 
-# 2. Start the backend (port 8000), in one terminal
-cd backend
-uv run uvicorn src.main:app --reload --port 8000
-
-# 3. Start the frontend (port 5173), in another terminal
-cd frontend
-npm run dev -- --port 5173
+# 2. Start the backend (API on :8000) and the frontend (UI on :5173) together
+python scripts/dev.py
 ```
+
+`scripts/dev.py` runs both servers and stops both on Ctrl+C. To start them in separate terminals
+instead: `cd backend && uv run uvicorn src.main:app --reload --port 8000` and
+`cd frontend && npm run dev -- --port 5173`.
 
 The backend applies its append-only SQL migrations (including seed teams, users and SLA
 policies) automatically on startup against a local SQLite database. Check readiness with:
@@ -77,8 +76,8 @@ Seeded teams (queues): Billing, Technical, Account, and their tier-2 escalation 
 **Backend** (from `backend/`):
 
 ```bash
-uv run pytest -x -q                                   # tests
-uv run pytest -q --cov=src --cov-report=term-missing   # tests with coverage
+uv run pytest -x -q                                   # tests (also writes coverage.xml)
+uv run pytest --cov-report=term-missing --cov-fail-under=80   # coverage report, enforce 80% floor
 uv run ruff check --fix .                              # lint
 uv run mypy src/                                       # strict type check
 uv run lint-imports                                    # architecture / layering contract
@@ -124,4 +123,11 @@ Business rules live in `backend/src/domain`. One-way dependencies only, enforced
 
 `.gitlab-ci.yml` runs lint, type check, architecture check, and tests with coverage for both
 backend and frontend, plus a Playwright E2E stage across 375/768/1280 px viewports, on every
-push.
+push. The backend coverage report (`backend/coverage.xml`, floor 80%) is kept as a build
+artifact. `.github/workflows/ci.yml` runs the same checks on GitHub.
+
+Both pipelines have an optional Claude Code review of the diff. It runs only when an API key is
+set: the `ANTHROPIC_API_KEY` repository secret on GitHub (pull requests, via
+`anthropics/claude-code-action`), or the `ANTHROPIC_API_KEY` CI/CD variable on GitLab (merge
+request pipelines, via `claude -p`, `allow_failure: true`). Without the key the job is skipped
+and the pipeline stays green.
