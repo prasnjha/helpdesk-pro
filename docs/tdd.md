@@ -31,4 +31,12 @@ Result: the full suite passes with 99 percent coverage, and `ruff`, `mypy --stri
 
 ## Note on history
 
-Group A and B were built before the per-AC commit rule was enforced, so their history is coarser. From Group C onward, every AC has its own red, green and refactor commits.
+The red, green, refactor rule was not followed everywhere. Some commits combine steps that this document asks to keep apart. They are pushed to `origin`, and under the no-rewrite rule in `claude-progress.txt` they are not rewritten. The record is kept here instead.
+
+- **Group A** (`c1363c8`, 2026-10-03) is one `feat:` commit for the whole group. It predates the per-AC rule.
+- **Group B** (`1ae1d4a`, 2026-10-03) is one large `feat:` commit of 20 files. Its tests and implementation were committed together, with no red commit first. This is the Sprint 2 large commit.
+- **Group C** (AC-05, AC-06, AC-10) follows the rule. Each AC has red, green and refactor commits, for example `8a14ea3` (red), `0d6376f` and `1b6b3b3` (green), `202662b` (refactor).
+- **The knowledge base commit** `0017eb9` (AC-09, E5-S1, 2026-10-04) is one `feat:` commit. Its tests (`test_kb_articles_api.py`, `test_domain_kb.py`) and its implementation were committed together. There is no red commit for AC-09.
+- **Group D's frontend commit** `4ac2474` (2026-10-04) is one squashed commit of 36 files. It covers the Group D UI, the backend login change, the seed script and CI. Its test-first steps were not committed separately. The follow-up component refactor, from `2195aef` on, used red-first commits. See [fix loop 04](fix-loops/04-group-d-squashed-commit.md).
+
+Going forward, every AC needs its own red, green and refactor commits, as described in the loop above.
