@@ -12,7 +12,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy import Engine
 
 from src.api.deps import get_clock, get_current_user, get_engine, require_role
+from src.domain.sla import SlaSnapshot
 from src.repository import note_repository, reply_repository, ticket_repository
+from src.service.sla_service import get_snapshot_for_agent, get_snapshot_for_customer
 from src.service.ticket_service import add_note as add_note_service
 from src.service.ticket_service import add_reply as add_reply_service
 from src.service.ticket_service import change_ticket_status as change_ticket_status_service
@@ -114,6 +116,39 @@ class TicketDetailOut(BaseModel):
     replies: list[TicketReplyOut]
     notes: list[TicketNoteOut]
     history: list[TicketHistoryOut]
+
+
+class SlaTimerOut(BaseModel):
+    target_minutes: int
+    elapsed_minutes: int
+    state: str
+    stopped_at: str | None
+
+
+class SlaSnapshotOut(BaseModel):
+    response: SlaTimerOut
+    resolution: SlaTimerOut
+
+
+def _sla_snapshot_out(snapshot: SlaSnapshot) -> SlaSnapshotOut:
+    return SlaSnapshotOut(
+        response=SlaTimerOut(
+            target_minutes=snapshot.response.target_minutes,
+            elapsed_minutes=snapshot.response.elapsed_minutes,
+            state=snapshot.response.state,
+            stopped_at=snapshot.response.stopped_at.isoformat()
+            if snapshot.response.stopped_at
+            else None,
+        ),
+        resolution=SlaTimerOut(
+            target_minutes=snapshot.resolution.target_minutes,
+            elapsed_minutes=snapshot.resolution.elapsed_minutes,
+            state=snapshot.resolution.state,
+            stopped_at=snapshot.resolution.stopped_at.isoformat()
+            if snapshot.resolution.stopped_at
+            else None,
+        ),
+    )
 
 
 class ClaimRequest(BaseModel):
@@ -243,6 +278,20 @@ def get_ticket_detail(
         notes=notes,
         history=history,
     )
+
+
+@router.get("/{ticket_id}/sla", response_model=SlaSnapshotOut)
+def get_ticket_sla(
+    ticket_id: str,
+    engine: Engine = Depends(get_engine),
+    clock: Clock = Depends(get_clock),
+    user: UserRecord = Depends(get_current_user),
+) -> SlaSnapshotOut:
+    if user.role == "customer":
+        snapshot = get_snapshot_for_customer(engine, clock, ticket_id, user.id)
+    else:
+        snapshot = get_snapshot_for_agent(engine, clock, ticket_id)
+    return _sla_snapshot_out(snapshot)
 
 
 @router.post("/{ticket_id}/claim", response_model=AssignmentResponse)

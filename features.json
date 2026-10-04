@@ -138,8 +138,8 @@
       "Assert two TIMER_STARTED SlaEvent rows exist, both at T0",
       "GET /api/tickets/{id}/sla and assert response target 60 and resolution target 480"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -154,8 +154,8 @@
       "Read SLA at T0 + 15 min and assert BREACHED",
       "On a second ticket, post an internal note at +5 min and a public reply at +20 min; assert stopped_at is +20 min"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -170,8 +170,8 @@
       "Read the ticket and assert escalated is true and status is unchanged",
       "Assert queue is Billing Tier 2 and one BREACHED_RESPONSE and one ESCALATED SlaEvent exist"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -186,8 +186,8 @@
       "Read the ticket again at a later Clock time",
       "Assert the SlaEvent row count is unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -298,8 +298,8 @@
       "Assert response 201 with version 2",
       "GET /api/admin/sla-policies?priority=High and assert v1 still shows 60 and 480"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   },
@@ -314,8 +314,8 @@
       "Assert each response is 409 with code POLICY_VERSION_IMMUTABLE",
       "Assert the v1 row is unchanged"
     ],
-    "passes": false,
-    "last_evaluated": null,
+    "passes": true,
+    "last_evaluated": "2026-10-04T07:18:20Z",
     "failure_reason": null,
     "failure_layer": null
   }

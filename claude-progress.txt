@@ -98,3 +98,53 @@ notes: Implemented Group B (E3-S1..E3-S4: lifecycle state machine, claim/reassig
 next_action: Run /auto --group C to implement SLA engine and escalation
   (E3-S5/S6, E4-S1..S3): GET /api/tickets/{id}/sla, breach detection and
   tier-2 escalation, knowledge base publish on resolve.
+
+=== Session 4 ===
+date: 2026-10-04T07:18:20Z
+mode: solo
+groups_completed: [A, B, C]
+groups_remaining: [D]
+current_group: none
+current_stories: []
+sprint_contract: none (solo mode, no sprint contract negotiation)
+last_commit: pending (see PR into main)
+features_passing: 18 / 20
+coverage: 99%
+learned_rules: 1
+blocked_stories: none
+notes: Implemented Group C (E4-S1, E4-S2, E4-S3: SLA policy versioning API,
+  response/resolution timers, breach escalation to tier 2). New pure domain
+  modules src/domain/sla.py (integer-minute timer math per
+  sla-policy-evaluator skill: elapsed_minutes = (end-now)//timedelta(minutes=1),
+  AT_RISK at elapsed*100 >= target*80, BREACHED at elapsed >= target),
+  src/domain/escalation.py (tier2_slug_for, idempotent on an already-tier-2
+  slug), and src/domain/sla_policy.py (AC-10 value rules: >=1, resolution >=
+  response). Migration 006_sla.sql adds tickets.response_stopped_at /
+  resolution_stopped_at and the append-only sla_event table (partial unique
+  index on (ticket_id, timer) for the two breach events; ESCALATED
+  idempotency is guarded in the same transaction instead, since SQLite
+  treats NULL as distinct in unique indexes). ticket_repository.add_reply
+  now stops the response timer on the first agent (never customer) reply,
+  only if not already stopped; change_status to RESOLVED stops both timers.
+  New src/repository/sla_repository.evaluate_and_escalate is the one
+  function that runs on every GET /api/tickets/{id}/sla read (no
+  scheduler, per escalation-checker skill): computes the snapshot, records
+  at most one BREACHED_RESPONSE/BREACHED_RESOLUTION SlaEvent per timer, and
+  escalates (flag + queue move to <category>-tier-2 + one ESCALATED
+  SlaEvent/history row) at most once per ticket; a CLOSED ticket is read
+  without any write. New sla_policy_repository.insert_version/list_versions/
+  get_targets and sla_event_repository (both append-only, structurally
+  checked like assignment_repository). New src/api/routers/admin.py: POST/GET
+  /api/admin/sla-policies and PATCH/PUT/DELETE .../versions/{id} (always 409
+  POLICY_VERSION_IMMUTABLE for admin, 403 for non-admin). New GET
+  /api/tickets/{id}/sla route (customer-own/agent/admin, 404 for
+  non-owner-customer and unknown ticket). Float rejection uses pydantic
+  Field(strict=True) on response_minutes/resolution_minutes. Updated the one
+  pre-existing test that hardcoded the migration file count (5 -> 6). All 144
+  backend tests pass (33 new); ruff, mypy --strict, and lint-imports are
+  clean; coverage holds at 99% (floor 80%, baseline 99%, unchanged).
+  features.json F009/F010/F011/F012/F019/F020 now pass (AC-05, AC-06, AC-10).
+next_action: Run /auto --group D to implement CI pipeline, KB publish/CRUD
+  API and pages, admin console UI, agent workbench UI, responsive layout,
+  README quick-start, and optionally the stretch notification inbox
+  (E6-S5, E5-S1, E6-S2, E5-S2, E6-S1, E6-S3, E6-S4, E6-S6).

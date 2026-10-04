@@ -23,3 +23,8 @@ def get_by_slug(conn: Connection, slug: str) -> QueueRef | None:
     if row is None:
         return None
     return QueueRef(slug=row["slug"], name=row["name"])
+
+
+def get_id_by_slug(conn: Connection, slug: str) -> int | None:
+    row = conn.execute(text("SELECT id FROM teams WHERE slug = :slug"), {"slug": slug}).first()
+    return None if row is None else int(row[0])
