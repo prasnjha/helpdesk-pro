@@ -20,7 +20,16 @@ import type {
 import { ErrorBanner } from "../components/ErrorBanner";
 import { getRole } from "../state/session";
 
-const STATUS_OPTIONS: Status[] = ["OPEN", "IN_PROGRESS", "PENDING_CUSTOMER", "RESOLVED", "CLOSED"];
+// Agent-initiated edges only (ticket-lifecycle_spec.md Section 2); the
+// customer-initiated PENDING_CUSTOMER -> OPEN edge happens via a reply, not
+// this control, and CLOSED is terminal.
+const VALID_NEXT_STATES: Record<Status, Status[]> = {
+  OPEN: ["IN_PROGRESS"],
+  IN_PROGRESS: ["PENDING_CUSTOMER", "RESOLVED"],
+  PENDING_CUSTOMER: ["RESOLVED"],
+  RESOLVED: ["CLOSED"],
+  CLOSED: [],
+};
 
 export function TicketDetailPage(): JSX.Element {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +42,7 @@ export function TicketDetailPage(): JSX.Element {
   const [replyBody, setReplyBody] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [reassignTo, setReassignTo] = useState("");
-  const [nextStatus, setNextStatus] = useState<Status>("IN_PROGRESS");
+  const [nextStatus, setNextStatus] = useState<Status | "">("");
 
   const load = useCallback(() => {
     if (!id) return;
@@ -86,11 +95,12 @@ export function TicketDetailPage(): JSX.Element {
 
   function handleStatusChange(event: React.FormEvent): void {
     event.preventDefault();
-    if (!ticket) return;
+    const toStatus = nextStatus === "" ? VALID_NEXT_STATES[ticket?.status ?? "CLOSED"][0] : nextStatus;
+    if (!ticket || !toStatus) return;
     void runAction(() =>
       apiRequest<StatusResponse>(`/api/tickets/${ticket.id}/status`, {
         method: "POST",
-        body: { to_status: nextStatus, version: ticket.version },
+        body: { to_status: toStatus, version: ticket.version },
       })
     );
   }
@@ -127,6 +137,9 @@ export function TicketDetailPage(): JSX.Element {
 
   const canReply = ticket.status !== "RESOLVED" && ticket.status !== "CLOSED";
   const canPublishToKb = ticket.status === "RESOLVED" || ticket.status === "CLOSED";
+  const isClosed = ticket.status === "CLOSED";
+  const nextStates = VALID_NEXT_STATES[ticket.status];
+  const selectedNextStatus = nextStatus === "" ? nextStates[0] ?? "" : nextStatus;
 
   return (
     <main>
@@ -152,7 +165,9 @@ export function TicketDetailPage(): JSX.Element {
         </section>
       )}
 
-      {isStaff && (
+      {isStaff && isClosed && <p>Closed tickets cannot be changed.</p>}
+
+      {isStaff && !isClosed && (
         <section aria-label="Agent actions">
           <h2>Actions</h2>
           <button type="button" onClick={handleClaim}>
@@ -169,26 +184,28 @@ export function TicketDetailPage(): JSX.Element {
             <button type="submit">Reassign</button>
           </form>
 
-          <form onSubmit={handleStatusChange}>
-            <label htmlFor="next-status">Change status</label>
-            <select
-              id="next-status"
-              value={nextStatus}
-              onChange={(e) => setNextStatus(e.target.value as Status)}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <button type="submit">Update status</button>
-          </form>
-
-          {canPublishToKb && (
-            <Link to={`/kb/new?source_ticket_id=${ticket.id}`}>Publish to knowledge base</Link>
+          {nextStates.length > 0 && (
+            <form onSubmit={handleStatusChange}>
+              <label htmlFor="next-status">Change status</label>
+              <select
+                id="next-status"
+                value={selectedNextStatus}
+                onChange={(e) => setNextStatus(e.target.value as Status)}
+              >
+                {nextStates.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <button type="submit">Update status</button>
+            </form>
           )}
         </section>
+      )}
+
+      {isStaff && canPublishToKb && (
+        <Link to={`/kb/new?source_ticket_id=${ticket.id}`}>Publish to knowledge base</Link>
       )}
 
       {isStaff && (
@@ -199,11 +216,13 @@ export function TicketDetailPage(): JSX.Element {
               <li key={note.id}>{note.body}</li>
             ))}
           </ul>
-          <form onSubmit={handleAddNote}>
-            <label htmlFor="note-body">Add a note</label>
-            <textarea id="note-body" value={noteBody} onChange={(e) => setNoteBody(e.target.value)} />
-            <button type="submit">Add note</button>
-          </form>
+          {!isClosed && (
+            <form onSubmit={handleAddNote}>
+              <label htmlFor="note-body">Add a note</label>
+              <textarea id="note-body" value={noteBody} onChange={(e) => setNoteBody(e.target.value)} />
+              <button type="submit">Add note</button>
+            </form>
+          )}
         </section>
       )}
 
