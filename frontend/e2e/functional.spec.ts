@@ -12,6 +12,7 @@ async function login(page: Page, username: string, password = "Password123!"): P
   await page.getByLabel("Username").fill(username);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL((url) => !url.pathname.endsWith("/login"));
 }
 
 test.beforeEach(({ page }, testInfo) => {
@@ -101,7 +102,7 @@ test.describe("ticket lifecycle", () => {
     await login(page, "customer1");
     await page.goto(`/tickets/${ticketId}`);
 
-    await page.getByLabel("Reply").fill("Here is the requested diagnostic log.");
+    await page.getByRole("textbox", { name: "Reply" }).fill("Here is the requested diagnostic log.");
     await page.getByRole("button", { name: "Send reply" }).click();
 
     await expect(page.getByText("Here is the requested diagnostic log.")).toBeVisible();

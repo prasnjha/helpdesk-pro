@@ -24,7 +24,7 @@ test("E6S3_customer_ticket_list_and_reply_box_have_no_horizontal_scroll_at_375px
   await login(page, "customer1");
   await expect(page).toHaveURL(/\/tickets$/);
   expect(await hasNoHorizontalScroll(page)).toBe(true);
-  await page.screenshot({ path: "test-results/snapshots/customer-tickets-375.png" });
+  await page.screenshot({ path: "e2e/snapshots/customer-tickets-375.png" });
 });
 
 test("E6S3_customer_and_agent_views_render_at_768px", async ({ page }) => {
@@ -33,11 +33,11 @@ test("E6S3_customer_and_agent_views_render_at_768px", async ({ page }) => {
 
   await login(page, "customer1");
   await expect(page.getByRole("heading", { name: "My tickets" })).toBeVisible();
-  await page.screenshot({ path: "test-results/snapshots/customer-tickets-768.png" });
+  await page.screenshot({ path: "e2e/snapshots/customer-tickets-768.png" });
 
   await login(page, "agent1");
   await expect(page.getByRole("heading", { name: "Agent workbench" })).toBeVisible();
-  await page.screenshot({ path: "test-results/snapshots/agent-workbench-768.png" });
+  await page.screenshot({ path: "e2e/snapshots/agent-workbench-768.png" });
 });
 
 test("E6S3_agent_workbench_renders_in_full_at_1280px", async ({ page }) => {
@@ -48,5 +48,5 @@ test("E6S3_agent_workbench_renders_in_full_at_1280px", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Agent workbench" })).toBeVisible();
   await expect(page.getByLabel("Queue")).toBeVisible();
   expect(await hasNoHorizontalScroll(page)).toBe(true);
-  await page.screenshot({ path: "test-results/snapshots/agent-workbench-1280.png" });
+  await page.screenshot({ path: "e2e/snapshots/agent-workbench-1280.png" });
 });
