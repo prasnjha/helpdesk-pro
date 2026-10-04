@@ -28,7 +28,8 @@ def clock() -> TestClock:
 
 @pytest.fixture()
 def app(engine, clock):
-    return create_app(engine, clock)
+    settings = get_settings()
+    return create_app(engine, clock, settings.cors_allowed_origins)
 
 
 @pytest.fixture()

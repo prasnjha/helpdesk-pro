@@ -36,6 +36,13 @@ curl http://localhost:8000/health
 
 Then open http://localhost:5173.
 
+### Configuration
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `DATABASE_URL` | local SQLite file under `backend/` | Backend database connection |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated list of origins the API accepts browser requests from (no wildcard) |
+
 ### Optional: demo tickets
 
 The quick start above gives you an empty, working app. To also see the full lifecycle —
