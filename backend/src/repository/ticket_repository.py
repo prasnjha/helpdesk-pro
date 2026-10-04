@@ -128,6 +128,61 @@ def list_for_customer(engine: Engine, customer_id: str) -> list[TicketSummary]:
         return [TicketSummary(**row) for row in rows]
 
 
+def list_for_queue(
+    engine: Engine,
+    *,
+    queue_id: int,
+    priority: str | None = None,
+    status: str | None = None,
+    escalated: bool | None = None,
+) -> list[TicketRecord]:
+    clauses = ["queue_id = :queue_id"]
+    params: dict[str, object] = {"queue_id": queue_id}
+    if priority is not None:
+        clauses.append("priority = :priority")
+        params["priority"] = priority
+    if status is not None:
+        clauses.append("status = :status")
+        params["status"] = status
+    if escalated is not None:
+        clauses.append("escalated = :escalated")
+        params["escalated"] = 1 if escalated else 0
+    with engine.connect() as conn:
+        rows = (
+            conn.execute(
+                text(
+                    "SELECT * FROM tickets WHERE " + " AND ".join(clauses) + " ORDER BY seq"
+                ),
+                params,
+            )
+            .mappings()
+            .all()
+        )
+        queue = team_repository.get_by_id(conn, queue_id)
+        assert queue is not None
+        return [
+            TicketRecord(
+                id=row["id"],
+                title=row["title"],
+                description=row["description"],
+                category=row["category"],
+                priority=row["priority"],
+                status=row["status"],
+                queue=queue,
+                customer_id=row["customer_id"],
+                assignee_id=row["assignee_id"],
+                escalated=bool(row["escalated"]),
+                sla_policy_version_id=row["sla_policy_version_id"],
+                version=row["version"],
+                created_at=row["created_at"],
+                updated_at=row["updated_at"],
+                response_stopped_at=row["response_stopped_at"],
+                resolution_stopped_at=row["resolution_stopped_at"],
+            )
+            for row in rows
+        ]
+
+
 def count_tickets(engine: Engine) -> int:
     with engine.connect() as conn:
         return int(conn.execute(text("SELECT COUNT(*) FROM tickets")).scalar_one())
