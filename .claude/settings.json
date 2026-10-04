@@ -46,6 +46,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-length-pre.js\"",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-env.js\"",
+            "timeout": 5000
           }
         ]
       }
@@ -57,11 +62,6 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/scope-directory.js\"",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-env.js\"",
             "timeout": 5000
           },
           {
