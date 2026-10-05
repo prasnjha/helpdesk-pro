@@ -5,15 +5,39 @@ reassign (AC-03, E3-S2), status transitions (AC-04, E3-S1), notes and replies
 
 from __future__ import annotations
 
-from typing import Literal
-
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel, Field
 from sqlalchemy import Engine
 
 from src.api.deps import get_clock, get_current_user, get_engine, require_role
+from src.api.ticket_schemas import (
+    AssignmentResponse,
+    ClaimRequest,
+    CreateTicketRequest,
+    CreateTicketResponse,
+    NoteRequest,
+    NoteResponse,
+    QueueOut,
+    ReassignRequest,
+    ReplyRequest,
+    ReplyResponse,
+    SlaSnapshotOut,
+    SlaTimerOut,
+    StatusRequest,
+    StatusResponse,
+    TicketAssignmentOut,
+    TicketDetailOut,
+    TicketHistoryOut,
+    TicketNoteOut,
+    TicketReplyOut,
+    TicketSummaryOut,
+)
 from src.domain.sla import SlaSnapshot
-from src.repository import note_repository, reply_repository, ticket_repository
+from src.repository import (
+    assignment_repository,
+    note_repository,
+    reply_repository,
+    ticket_repository,
+)
 from src.service.sla_service import get_snapshot_for_agent, get_snapshot_for_customer
 from src.service.ticket_service import add_note as add_note_service
 from src.service.ticket_service import add_reply as add_reply_service
@@ -31,103 +55,6 @@ from src.types.errors import MethodNotAllowedError
 from src.types.models import TicketRecord, UserRecord
 
 router = APIRouter(prefix="/api/tickets")
-
-
-class Attachment(BaseModel):
-    file_name: str
-    size_bytes: int
-
-
-class CreateTicketRequest(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
-    description: str = Field(min_length=1, max_length=5000)
-    category: Literal["Billing", "Technical", "Account"]
-    priority: Literal["Critical", "High", "Medium", "Low"]
-    attachments: list[Attachment] | None = None
-
-
-class QueueOut(BaseModel):
-    slug: str
-    name: str
-
-
-class CreateTicketResponse(BaseModel):
-    id: str
-    status: str
-    category: str
-    priority: str
-    queue: QueueOut
-    customer_id: str
-    created_at: str
-
-
-class TicketSummaryOut(BaseModel):
-    id: str
-    title: str
-    status: str
-    priority: str
-    category: str
-    updated_at: str
-
-
-class TicketReplyOut(BaseModel):
-    id: int
-    ticket_id: str
-    author_id: str
-    author_role: str
-    body: str
-    created_at: str
-
-
-class TicketNoteOut(BaseModel):
-    id: int
-    ticket_id: str
-    author_id: str
-    body: str
-    created_at: str
-
-
-class TicketHistoryOut(BaseModel):
-    id: int
-    ticket_id: str
-    event: str
-    from_state: str | None
-    to_state: str | None
-    actor_id: str
-    correlation_id: str | None
-    created_at: str
-
-
-class TicketDetailOut(BaseModel):
-    id: str
-    title: str
-    description: str
-    category: str
-    priority: str
-    status: str
-    queue: QueueOut
-    customer_id: str
-    assignee_id: str | None
-    escalated: bool
-    version: int
-    sla_policy_version_id: int
-    created_at: str
-    updated_at: str
-    replies: list[TicketReplyOut]
-    notes: list[TicketNoteOut]
-    history: list[TicketHistoryOut]
-
-
-class SlaTimerOut(BaseModel):
-    target_minutes: int
-    elapsed_minutes: int
-    state: str
-    stopped_at: str | None
-
-
-class SlaSnapshotOut(BaseModel):
-    response: SlaTimerOut
-    resolution: SlaTimerOut
 
 
 def _sla_snapshot_out(snapshot: SlaSnapshot) -> SlaSnapshotOut:
@@ -149,56 +76,6 @@ def _sla_snapshot_out(snapshot: SlaSnapshot) -> SlaSnapshotOut:
             else None,
         ),
     )
-
-
-class ClaimRequest(BaseModel):
-    version: int
-
-
-class ReassignRequest(BaseModel):
-    assignee_id: str
-    version: int
-
-
-class AssignmentResponse(BaseModel):
-    id: str
-    status: str
-    assignee_id: str | None
-
-
-class StatusRequest(BaseModel):
-    to_status: Literal["OPEN", "IN_PROGRESS", "PENDING_CUSTOMER", "RESOLVED", "CLOSED"]
-    version: int
-
-
-class StatusResponse(BaseModel):
-    id: str
-    status: str
-
-
-class NoteRequest(BaseModel):
-    body: str = Field(min_length=1, max_length=5000)
-
-
-class NoteResponse(BaseModel):
-    id: int
-    ticket_id: str
-    author_id: str
-    body: str
-    created_at: str
-
-
-class ReplyRequest(BaseModel):
-    body: str = Field(min_length=1, max_length=5000)
-
-
-class ReplyResponse(BaseModel):
-    id: int
-    ticket_id: str
-    author_role: str
-    body: str
-    created_at: str
-    status: str
 
 
 def _queue_out(ticket: TicketRecord) -> QueueOut:
@@ -251,12 +128,15 @@ def get_ticket_detail(
         ticket = get_ticket_for_customer(engine, ticket_id, user.id)
         notes: list[TicketNoteOut] = []
         history: list[TicketHistoryOut] = []
+        assignments: list[TicketAssignmentOut] = []
     else:
         ticket = get_ticket_for_agent(engine, ticket_id)
         note_rows = note_repository.list_for_ticket(engine, ticket_id)
         notes = [TicketNoteOut(**vars(n)) for n in note_rows]
         history_rows = ticket_repository.list_history_for(engine, ticket_id)
         history = [TicketHistoryOut(**vars(h)) for h in history_rows]
+        assignment_rows = assignment_repository.list_for_ticket(engine, ticket_id)
+        assignments = [TicketAssignmentOut(**vars(a)) for a in assignment_rows]
     reply_rows = reply_repository.list_for_ticket(engine, ticket_id)
     replies = [TicketReplyOut(**vars(r)) for r in reply_rows]
     return TicketDetailOut(
@@ -277,6 +157,7 @@ def get_ticket_detail(
         replies=replies,
         notes=notes,
         history=history,
+        assignments=assignments,
     )
 
 

@@ -27,6 +27,7 @@ const baseTicket = {
   replies: [],
   notes: [],
   history: [],
+  assignments: [],
 };
 
 const slaSnapshot = {

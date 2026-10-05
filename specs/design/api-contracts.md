@@ -29,11 +29,12 @@ Source: `specs/app_spec.md`, feature specs, `specs/stories/`. Items marked **(as
 |---|---|---|---|---|
 | POST `/api/tickets` | customer | `{title, description, category, priority, attachments?: [{file_name, size_bytes}]}` | 201 `{id, status, category, priority, queue: {slug, name}, customer_id, created_at}` | 401 `UNAUTHORIZED`; 422 `VALIDATION_ERROR` (names field, e.g. `category`); 409 `ROUTING_RULE_MISSING`. No row written on any error. |
 | GET `/api/tickets` | customer | none | 200 array of own tickets `{id, title, status, priority, category, updated_at}` | 401 |
-| GET `/api/tickets/{id}` | customer (own only), agent, admin | none | 200 `{id, title, description, category, priority, status, queue: {slug, name}, customer_id, assignee_id, escalated, version, sla_policy_version_id, created_at, updated_at, replies, notes, history}` | 404 `NOT_FOUND` (customer, not own); 401 |
+| GET `/api/tickets/{id}` | customer (own only), agent, admin | none | 200 `{id, title, description, category, priority, status, queue: {slug, name}, customer_id, assignee_id, escalated, version, sla_policy_version_id, created_at, updated_at, replies, notes, history, assignments}` | 404 `NOT_FOUND` (customer, not own); 401 |
 
 Detail view rules (decided):
-- Customers receive their own public replies only. They never receive `notes` or `history`.
-- Agents and admins receive all replies (public and internal), `notes`, and `history`.
+- Customers receive their own public replies only. They never receive `notes`, `history` or `assignments`. Those keys are present as empty arrays.
+- Agents and admins receive all replies (public and internal), `notes`, `history`, and `assignments`.
+- `assignments` items are `{id, ticket_id, from_user_id, to_user_id, actor_id, created_at}`, oldest first (the append-only Assignment rows).
 
 ## SLA read
 

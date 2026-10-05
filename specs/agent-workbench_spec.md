@@ -18,7 +18,7 @@ Agents take ownership of tickets, hand them to colleagues, and communicate about
 - Internal note: `POST /api/tickets/{id}/notes` with `{body}`, 1 to 5000 characters (ASM-S5). Notes are never returned on customer endpoints.
 - Agent public reply: `POST /api/tickets/{id}/replies` with `{body}` and `author_role=agent`. The first public agent reply stops the response timer (A-02, `sla-engine_spec.md`).
 - Notes and replies are append-only. `PUT`, `PATCH`, and `DELETE` on a note or reply id return 405.
-- Ticket detail: `GET /api/tickets/{id}` serves agents and admins for any ticket. It returns all replies (public and internal), notes, and history. Customers never receive notes.
+- Ticket detail: `GET /api/tickets/{id}` serves agents and admins for any ticket. It returns all replies (public and internal), notes, history, and assignments (the append-only Assignment rows, oldest first). Customers never receive notes, history, or assignments.
 - Queue listing: `GET /api/agent/queues/{queue}/tickets`, where `{queue}` is the team slug (`billing`, `billing-tier-2`, and so on). Filters are `priority`, `status`, and `escalated`. Responses include the queue's slug and name.
 - Writes to a `CLOSED` ticket follow `ticket-lifecycle_spec.md`.
 - Notifications: an agent's public reply and any status change create a customer notification row (optional stretch story E6-S6). Agents receive no notification rows in this build.

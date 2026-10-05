@@ -23,6 +23,7 @@ const ticket: TicketDetail = {
   replies: [],
   notes: [],
   history: [],
+  assignments: [],
 };
 
 describe("TicketHeader", () => {
