@@ -4,7 +4,7 @@
 // the customer page never does (the backend filters both lists for customers).
 
 import type { TicketAssignmentEntry, TicketHistoryEntry } from "../api/types";
-import { formatDateTime } from "../utils/format";
+import { formatDateTime, parse } from "../utils/format";
 import { Icon } from "./Icon";
 
 interface TicketHistoryProps {
@@ -30,12 +30,18 @@ function historyEventLabel(entry: TicketHistoryEntry): string {
 
 function assignmentEventLabel(entry: TicketAssignmentEntry): string {
   if (entry.from_user_id === null) {
-    // The actor is shown on the meta line, so only a claim names the actor here.
+    // A claim names the assignee, which is also the actor. Other assignments
+    // name only the new assignee; the actor is on the meta line.
     return entry.actor_id === entry.to_user_id
       ? `ASSIGNED: ${entry.to_user_id} claimed`
       : `ASSIGNED: to ${entry.to_user_id}`;
   }
   return `REASSIGNED: ${entry.from_user_id} to ${entry.to_user_id}`;
+}
+
+// An unparseable timestamp sorts first, so the order stays defined.
+function timeOf(value: string): number {
+  return parse(value)?.getTime() ?? 0;
 }
 
 function timelineEntries(
@@ -56,7 +62,7 @@ function timelineEntries(
       actorId: a.actor_id,
     })),
   ];
-  return entries.sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
+  return entries.sort((a, b) => timeOf(a.createdAt) - timeOf(b.createdAt));
 }
 
 export function TicketHistory({ history, assignments }: TicketHistoryProps): JSX.Element {

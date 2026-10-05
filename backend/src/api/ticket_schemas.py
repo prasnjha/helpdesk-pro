@@ -1,8 +1,4 @@
-"""Pydantic request and response models for the ticket endpoints.
-
-Moved out of routers/tickets.py to keep that file under the 300-line rule.
-Shapes are unchanged; the router imports these names.
-"""
+"""Pydantic request and response models for the ticket endpoints."""
 
 from __future__ import annotations
 
