@@ -79,6 +79,15 @@ export interface TicketHistoryEntry {
   created_at: string;
 }
 
+export interface TicketAssignmentEntry {
+  id: number;
+  ticket_id: string;
+  from_user_id: string | null;
+  to_user_id: string;
+  actor_id: string;
+  created_at: string;
+}
+
 export interface TicketDetail {
   id: string;
   title: string;
@@ -97,6 +106,7 @@ export interface TicketDetail {
   replies: TicketReply[];
   notes: TicketNote[];
   history: TicketHistoryEntry[];
+  assignments: TicketAssignmentEntry[];
 }
 
 export type SlaState = "ON_TRACK" | "AT_RISK" | "BREACHED";

@@ -202,7 +202,7 @@ export function AgentTicketPage(): JSX.Element {
         </div>
         <aside className="detail-side">
           {sla && <SlaPanel sla={sla} />}
-          <TicketHistory history={ticket.history} />
+          <TicketHistory history={ticket.history} assignments={ticket.assignments} />
         </aside>
       </div>
     </main>
